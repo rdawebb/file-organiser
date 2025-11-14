@@ -18,6 +18,8 @@ class FileOrganiser:
 
     def __init__(self, directory: str) -> None:
         self.directory = Path(directory)
+        if not self.directory.exists() or not self.directory.is_dir():
+            raise ValueError(f"The directory {directory} does not exist or is not a directory.")
 
     def _check_collision(self, category_folder: Path, filename: str) -> str:
         """
@@ -30,18 +32,18 @@ class FileOrganiser:
         Returns:
             str: A unique filename to avoid collisions
         """
-        if any(entry.name == filename for entry in category_folder.iterdir()):
-            base = Path(filename).stem
-            extension = Path(filename).suffix
-            count = 1
-            while True:
-                new_filename = f"{base}({count}){extension}"
-                new_dest_path = category_folder / new_filename
-                if not new_dest_path.exists():
-                    return new_filename
-                count += 1
-        return filename
-    
+        if not category_folder.exists():
+            return filename
+        
+        base = Path(filename).stem
+        extension = Path(filename).suffix
+        candidate = filename
+        count = 1
+        while (category_folder / candidate).exists():
+            candidate = f"{base}({count}){extension}"
+            count += 1
+        return candidate
+
     def _process_file(
         self,
         dirpath: Path,
