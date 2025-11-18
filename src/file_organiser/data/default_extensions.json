@@ -1,13 +1,11 @@
-"""File extensions mapping for the file organiser."""
-
-EXTENSIONS = {
-    # Archives
+{
     ".7z": "archives",
     ".ace": "archives",
     ".arj": "archives",
     ".bz2": "archives",
     ".cab": "archives",
     ".gz": "archives",
+    ".gzip": "archives",
     ".jar": "archives",
     ".lz": "archives",
     ".lzma": "archives",
@@ -20,8 +18,9 @@ EXTENSIONS = {
     ".war": "archives",
     ".xz": "archives",
     ".z": "archives",
+    ".zip": "archives",
+    ".zipx": "archives",
 
-    # Audio
     ".aac": "audio",
     ".aiff": "audio",
     ".alac": "audio",
@@ -45,7 +44,6 @@ EXTENSIONS = {
     ".wma": "audio",
     ".wv": "audio",
 
-    # Code
     ".c": "code",
     ".cpp": "code",
     ".cs": "code",
@@ -69,7 +67,6 @@ EXTENSIONS = {
     ".tsx": "code",
     ".vb": "code",
 
-    # Data files
     ".conf": "data_files",
     ".csv": "data_files",
     ".db": "data_files",
@@ -84,7 +81,6 @@ EXTENSIONS = {
     ".yaml": "data_files",
     ".yml": "data_files",
 
-    # Disk Images
     ".dmg": "disk_images",
     ".img": "disk_images",
     ".iso": "disk_images",
@@ -92,7 +88,6 @@ EXTENSIONS = {
     ".vhd": "disk_images",
     ".vmdk": "disk_images",
 
-    # Documents
     ".doc": "documents",
     ".docx": "documents",
     ".odp": "documents",
@@ -105,7 +100,6 @@ EXTENSIONS = {
     ".xls": "documents",
     ".xlsx": "documents",
 
-    # Ebooks
     ".azw": "ebooks",
     ".azw3": "ebooks",
     ".cbz": "ebooks",
@@ -116,7 +110,6 @@ EXTENSIONS = {
     ".lit": "ebooks",
     ".mobi": "ebooks",
 
-    # Fonts
     ".eot": "fonts",
     ".fnt": "fonts",
     ".otf": "fonts",
@@ -127,7 +120,6 @@ EXTENSIONS = {
     ".woff": "fonts",
     ".woff2": "fonts",
 
-    # Images
     ".bmp": "images",
     ".emf": "images",
     ".exr": "images",
@@ -145,7 +137,6 @@ EXTENSIONS = {
     ".webp": "images",
     ".wmf": "images",
 
-    # Installers
     ".appx": "installers",
     ".apk": "installers",
     ".deb": "installers",
@@ -154,7 +145,6 @@ EXTENSIONS = {
     ".pkg": "installers",
     ".rpm": "installers",
 
-    # Misc
     ".bak": "misc",
     ".dat": "misc",
     ".old": "misc",
@@ -162,7 +152,6 @@ EXTENSIONS = {
     ".swp": "misc",
     ".tmp": "misc",
 
-    # Raw Images
     ".arw": "raw_images",
     ".bay": "raw_images",
     ".cr2": "raw_images",
@@ -180,14 +169,12 @@ EXTENSIONS = {
     ".sr2": "raw_images",
     ".x3f": "raw_images",
 
-    # Text
     ".log": "text",
     ".md": "text",
     ".rst": "text",
     ".tex": "text",
     ".txt": "text",
 
-    # Video
     ".3gp": "video",
     ".avi": "video",
     ".divx": "video",
@@ -207,8 +194,7 @@ EXTENSIONS = {
     ".webm": "video",
     ".wmv": "video",
 
-    # Web
     ".css": "web",
     ".htm": "web",
-    ".html": "web",
+    ".html": "web"
 }

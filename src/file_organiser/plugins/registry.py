@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from .base import (
-    Plugin,
     CategorisationPlugin,
-    ReporterPlugin,
     FilterPlugin,
+    Plugin,
     PostProcessingPlugin,
+    ReporterPlugin,
 )
 
 logger = logging.getLogger(__name__)

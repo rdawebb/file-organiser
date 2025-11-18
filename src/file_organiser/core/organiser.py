@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Optional, List, Iterator, Union
+from typing import Iterator, List, Optional, Union
 
-from .models import MoveResult, MoveStatus, OrganiserResult, OrganiserStats, FileInfo
+from .models import FileInfo, MoveResult, MoveStatus, OrganiserResult, OrganiserStats
 from .validators import PathValidator
 
 logger = logging.getLogger(__name__)

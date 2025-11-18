@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Optional, List, Tuple, Set
+from typing import List, Optional, Set, Tuple
 
 
 class MoveStatus(Enum):
