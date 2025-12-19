@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from ...core.models import FileInfo, MoveResult, OrganiserResult
+from src.file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
 from ..base import PluginMetadata, ReporterPlugin
 
 

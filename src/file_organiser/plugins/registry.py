@@ -112,7 +112,7 @@ class PluginRegistry:
         Returns:
             Optional[ReporterPlugin]: The default reporter plugin or None.
         """
-        pass  # Not implemented yet
+        pass
 
     def get_plugin(self, plugin_name: str) -> Optional[Plugin]:
         """Retrieves a plugin by name.

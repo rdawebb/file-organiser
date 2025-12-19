@@ -3,7 +3,7 @@
 import mimetypes
 from typing import Optional, Set
 
-from ...core.models import FileInfo
+from src.file_organiser.core.models import FileInfo
 from ..base import CategoriserPlugin, PluginMetadata
 
 
