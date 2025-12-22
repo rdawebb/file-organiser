@@ -1,6 +1,5 @@
 """Plugin registry for managing file organiser plugins."""
 
-import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -11,8 +10,9 @@ from .base import (
     PostProcessingPlugin,
     ReporterPlugin,
 )
+from src.file_organiser.utils.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PluginRegistry:

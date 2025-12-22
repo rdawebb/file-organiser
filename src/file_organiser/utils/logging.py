@@ -3,6 +3,7 @@
 import logging
 import sys
 from pathlib import Path
+from logging.handlers import RotatingFileHandler
 from typing import Optional
 
 
@@ -60,7 +61,9 @@ def setup_logging(
     handlers.append(console_handler)
 
     if log_file:
-        file_handler = logging.FileHandler(log_file)
+        file_handler = RotatingFileHandler(
+            log_file, maxBytes=1 * 1024 * 1024, backupCount=5
+        )
         file_handler.setLevel(logging.DEBUG)
         file_formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -117,3 +120,15 @@ class OperationLogger:
             )
 
         return False  # Do not suppress exceptions
+
+
+def get_logger(name: Optional[str] = None) -> logging.Logger:
+    """Retrieves a logger instance.
+
+    Args:
+        name (Optional[str], optional): Name of the logger. Defaults to root logger if None.
+
+    Returns:
+        logging.Logger: The logger instance.
+    """
+    return logging.getLogger(name)

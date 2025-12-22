@@ -1,15 +1,15 @@
 """File categorisation logic using plugins."""
 
-import logging
 from pathlib import Path
 from typing import List, Optional
 
 from src.file_organiser.plugins.base import CategorisationPlugin
 from src.file_organiser.plugins.registry import PluginRegistry
+from src.file_organiser.utils.logging import get_logger
 
 from .models import FileInfo
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FileCategoriser:

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import time
 from pathlib import Path
 from typing import Iterator, List, Optional, Union
@@ -13,8 +12,9 @@ from .mover import FileMover, MoveOptions
 from .validators import PathValidator
 from src.file_organiser.plugins.base import ReporterPlugin
 from src.file_organiser.plugins.registry import PluginRegistry
+from src.file_organiser.utils.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FileOrganiser:
@@ -77,7 +77,7 @@ class FileOrganiser:
         if not files:
             logger.info("No files found to organise.")
             return OrganiserResult.from_stats(stats, 0.0, dry_run)
-        
+
         self.reporter.on_start(total_files=len(files))
 
         try:
@@ -106,9 +106,7 @@ class FileOrganiser:
                         f"Moved: {file_info.name} -> {category}/{result.destination.name}"
                     )
                 else:
-                    logger.error(
-                        f"Failed to move {file_info.name}: {result.error}"
-                    )
+                    logger.error(f"Failed to move {file_info.name}: {result.error}")
 
         except KeyboardInterrupt:
             logger.warning("File organisation interrupted by user.")
@@ -172,7 +170,7 @@ class FileOrganiser:
             str: The determined category for the file.
         """
         category = self.categoriser.categorise(file_info)
-        
+
         if category == "unknown":
             logger.debug(f"Could not categorise file: {file_info.name}")
         else:
@@ -197,7 +195,7 @@ class FileOrganiser:
             Exception: If the move operation fails.
         """
         category_folder = self.directory / category
-        
+
         result = self.mover.move_file(
             source=file_info.path,
             destination_dir=category_folder,

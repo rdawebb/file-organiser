@@ -1,14 +1,14 @@
 """Handles moving files with safety checks and options."""
 
-import logging
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
 from .models import MoveResult, MoveStatus
+from src.file_organiser.utils.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
