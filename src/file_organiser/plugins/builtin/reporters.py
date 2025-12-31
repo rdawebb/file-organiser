@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from src.file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
+from file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
 from ..base import PluginMetadata, ReporterPlugin
 
 
@@ -38,7 +38,7 @@ class RichReporterPlugin(ReporterPlugin):
 
     def on_start(self, total_files: int) -> None:
         """Initialises the progress display.
-        
+
         Args:
             total_files (int): Total number of files to process.
         """
@@ -73,7 +73,7 @@ class RichReporterPlugin(ReporterPlugin):
 
     def on_file_processed(self, result: MoveResult) -> None:
         """Advances progress after file is processed.
-        
+
         Args:
             result (MoveResult): Result of the file move operation.
         """
@@ -82,7 +82,7 @@ class RichReporterPlugin(ReporterPlugin):
 
     def on_complete(self, result: OrganiserResult) -> None:
         """Displays the final summary.
-        
+
         Args:
             result (OrganiserResult): The final organiser result.
         """
@@ -96,7 +96,7 @@ class RichReporterPlugin(ReporterPlugin):
 
     def on_error(self, error: Exception, file_info: Optional[FileInfo] = None) -> None:
         """Displays an error message.
-        
+
         Args:
             error (Exception): The error that occurred.
             file_info (Optional[FileInfo], optional): Information about the file being processed.
@@ -205,7 +205,7 @@ class JSONReporterPlugin(ReporterPlugin):
 
     def on_start(self, total_files: int) -> None:
         """Records the start time.
-        
+
         Args:
             total_files (int): Total number of files to process.
         """

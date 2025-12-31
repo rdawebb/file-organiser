@@ -10,9 +10,9 @@ from .categoriser import FileCategoriser
 from .models import FileInfo, MoveResult, MoveStatus, OrganiserResult, OrganiserStats
 from .mover import FileMover, MoveOptions
 from .validators import PathValidator
-from src.file_organiser.plugins.base import ReporterPlugin
-from src.file_organiser.plugins.registry import PluginRegistry
-from src.file_organiser.utils.logging import get_logger
+from file_organiser.plugins.base import ReporterPlugin
+from file_organiser.plugins.registry import PluginRegistry
+from file_organiser.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -201,10 +201,8 @@ class FileOrganiser:
             destination_dir=category_folder,
             filename=file_info.name,
             dry_run=dry_run,
+            category=category,
         )
-
-        result.category = category
-
         return result
 
     def _is_in_category_folder(self, file_path: Path) -> bool:

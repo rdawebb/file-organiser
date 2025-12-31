@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "file-organiser"
+version = "0.1.0"
+description = "A simple file organisation tool"
+authors = [
+    { name = "Rob Webb", email = "rdawebb@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=14.0.0,<15.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.0,<10.0.0",
+    "pytest-cov>=7.0.0,<8.0.0",
+    "ruff>=0.14.0,<1.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

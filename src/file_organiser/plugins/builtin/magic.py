@@ -2,7 +2,7 @@
 
 from typing import Optional, Set
 
-from src.file_organiser.core.models import FileInfo
+from file_organiser.core.models import FileInfo
 from ..base import CategoriserPlugin, PluginMetadata
 
 

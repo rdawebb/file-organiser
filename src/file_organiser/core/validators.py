@@ -100,7 +100,7 @@ class PathValidator:
                     )
 
     @classmethod
-    def validate_category_name(category: str) -> None:
+    def validate_category_name(cls, category: str) -> None:
         """
         Validate that a category name is safe
 

@@ -3,9 +3,9 @@
 from pathlib import Path
 from typing import List, Optional
 
-from src.file_organiser.plugins.base import CategorisationPlugin
-from src.file_organiser.plugins.registry import PluginRegistry
-from src.file_organiser.utils.logging import get_logger
+from file_organiser.plugins.base import CategorisationPlugin
+from file_organiser.plugins.registry import PluginRegistry
+from file_organiser.utils.logging import get_logger
 
 from .models import FileInfo
 

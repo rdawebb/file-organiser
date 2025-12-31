@@ -10,7 +10,7 @@ from .base import (
     PostProcessingPlugin,
     ReporterPlugin,
 )
-from src.file_organiser.utils.logging import get_logger
+from file_organiser.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

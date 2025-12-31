@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from .models import MoveResult, MoveStatus
-from src.file_organiser.utils.logging import get_logger
+from file_organiser.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -39,6 +39,7 @@ class FileMover:
         source: Path,
         destination_dir: Path,
         filename: Optional[str] = None,
+        category: Optional[str] = None,
         dry_run: bool = False,
     ) -> MoveResult:
         """Moves a file to the specified destination directory.
@@ -70,6 +71,7 @@ class FileMover:
                     status=MoveStatus.DRY_RUN,
                     source=source,
                     destination=dest,
+                    category=category,
                 )
 
             if self.options.create_dirs:
@@ -89,6 +91,7 @@ class FileMover:
                 status=MoveStatus.SUCCESS,
                 source=source,
                 destination=dest,
+                category=category,
             )
 
         except PermissionError as e:
@@ -99,6 +102,7 @@ class FileMover:
                 source=source,
                 destination=None,
                 error=e,
+                category=category,
             )
 
         except (OSError, IOError, shutil.Error) as e:
@@ -109,6 +113,7 @@ class FileMover:
                 source=source,
                 destination=None,
                 error=e,
+                category=category,
             )
 
         except Exception as e:
@@ -119,6 +124,7 @@ class FileMover:
                 source=source,
                 destination=None,
                 error=e,
+                category=category,
             )
 
     def _atomic_move(self, source: Path, dest: Path) -> None:
