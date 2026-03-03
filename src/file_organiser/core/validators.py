@@ -56,7 +56,7 @@ class PathValidator:
             raise FileNotFoundError(f"Directory does not exist: {directory}")
 
         if not directory.is_dir():
-            raise ValueError(f"Path is not a directory: {directory}")
+            raise NotADirectoryError(f"Path is not a directory: {directory}")
 
         if not os.access(directory, os.R_OK | os.W_OK):
             raise PermissionError(
@@ -112,7 +112,7 @@ class PathValidator:
         """
         import re
 
-        if not re.match(r"^[a-z0-9_-]+$", category, re.IGNORECASE):
+        if not re.match(r"^[a-z0-9 _-]+$", category, re.IGNORECASE):
             raise ValueError(
                 f"Invalid category name: '{category}'",
                 "Must contain only letters, numbers, underscores, and hyphens.",

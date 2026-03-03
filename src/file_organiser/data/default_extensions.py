@@ -21,7 +21,6 @@
     ".zip": "archives",
     ".zipx": "archives",
     ".zst": "archives",
-
     ".aac": "audio",
     ".aiff": "audio",
     ".alac": "audio",
@@ -44,7 +43,6 @@
     ".wav": "audio",
     ".wma": "audio",
     ".wv": "audio",
-
     ".bash": "code",
     ".c": "code",
     ".cpp": "code",
@@ -74,7 +72,6 @@
     ".tsx": "code",
     ".vb": "code",
     ".vue": "code",
-
     ".avro": "data_files",
     ".conf": "data_files",
     ".csv": "data_files",
@@ -93,20 +90,17 @@
     ".xml": "data_files",
     ".yaml": "data_files",
     ".yml": "data_files",
-
     ".ai": "design_files",
     ".fig": "design_files",
     ".psd": "design_files",
     ".sketch": "design_files",
     ".xd": "design_files",
-
     ".dmg": "disk_images",
     ".img": "disk_images",
     ".iso": "disk_images",
     ".nrg": "disk_images",
     ".vhd": "disk_images",
     ".vmdk": "disk_images",
-
     ".doc": "documents",
     ".docx": "documents",
     ".key": "documents",
@@ -120,7 +114,6 @@
     ".rtf": "documents",
     ".xls": "documents",
     ".xlsx": "documents",
-
     ".azw": "ebooks",
     ".azw3": "ebooks",
     ".cbz": "ebooks",
@@ -130,7 +123,6 @@
     ".fb2": "ebooks",
     ".lit": "ebooks",
     ".mobi": "ebooks",
-
     ".eot": "fonts",
     ".fnt": "fonts",
     ".otf": "fonts",
@@ -140,7 +132,6 @@
     ".ttf": "fonts",
     ".woff": "fonts",
     ".woff2": "fonts",
-
     ".avif": "images",
     ".bmp": "images",
     ".emf": "images",
@@ -158,7 +149,6 @@
     ".tiff": "images",
     ".webp": "images",
     ".wmf": "images",
-
     ".appx": "installers",
     ".apk": "installers",
     ".deb": "installers",
@@ -166,14 +156,12 @@
     ".msi": "installers",
     ".pkg": "installers",
     ".rpm": "installers",
-
     ".bak": "misc",
     ".dat": "misc",
     ".old": "misc",
     ".orig": "misc",
     ".swp": "misc",
     ".tmp": "misc",
-
     ".arw": "raw_images",
     ".bay": "raw_images",
     ".cr2": "raw_images",
@@ -190,13 +178,11 @@
     ".rw2": "raw_images",
     ".sr2": "raw_images",
     ".x3f": "raw_images",
-
     ".log": "text",
     ".md": "text",
     ".rst": "text",
     ".tex": "text",
     ".txt": "text",
-
     ".3gp": "videos",
     ".avi": "videos",
     ".divx": "videos",
@@ -215,14 +201,12 @@
     ".vob": "videos",
     ".webm": "videos",
     ".wmv": "videos",
-
     ".css": "web",
     ".htm": "web",
     ".html": "web",
-
     ".blend": "3d_files",
     ".fbx": "3d_files",
     ".gltf": "3d_files",
     ".obj": "3d_files",
-    ".stl": "3d_files"
+    ".stl": "3d_files",
 }

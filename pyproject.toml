@@ -1,25 +1,57 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "file-organiser"
 version = "0.1.0"
-description = "A simple file organisation tool"
+description = "High-performance file moving app with safety checks"
 authors = [
     { name = "Rob Webb", email = "rdawebb@gmail.com" }
 ]
 requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["file", "move", "rename", "organise", "filesystem"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: System :: Filesystems",
+]
 dependencies = [
-    "rich>=14.0.0,<15.0.0"
+    "rich>=14.0.0,<15.0.0",
+    "typer-extensions>=0.2.2,<1.0.0"
 ]
 
 [project.optional-dependencies]
 dev = [
+    "prek>=0.3.4,<1.0.0",
     "pytest>=9.0.0,<10.0.0",
+    "pytest-benchmark>=5.0.0,<6.0.0",
     "pytest-cov>=7.0.0,<8.0.0",
-    "ruff>=0.14.0,<1.0.0"
+    "pytest-mock>=3.14.0,<4.0.0",
+    "pytest-timeout>=2.4.0,<3.0.0",
+    "ruff>=0.15.4,<1.0.0",
+    "rust-just>=1.46.0,<2.0.0",
+    "ty>=0.0.20,<1.0.0"
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[project.urls]
+Homepage = "https://github.com/rdawebb/file-organiser"
+Repository = "https://github.com/rdawebb/file-organiser"
+Documentation = "https://github.com/rdawebb/file-organiser/blob/main/README.md"
+
+[tool.maturin]
+module-name = "file_mover"
+python-packages = ["src"]
+manifest-path = "rust/file_mover/Cargo.toml"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

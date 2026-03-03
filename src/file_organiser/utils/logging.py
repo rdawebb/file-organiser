@@ -2,9 +2,11 @@
 
 import logging
 import sys
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from typing import Optional
+
+from file_mover import file_mover
 
 
 class ColouredFormatter(logging.Formatter):
@@ -49,13 +51,21 @@ def setup_logging(
 
     handlers = []
 
+    rust_handler = logging.StreamHandler()
+    rust_handler.setLevel(level)
+
     console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(level)
 
     if coloured and sys.stderr.isatty():
-        console_formatter = ColouredFormatter("%(levelname)s: %(message)s")
+        console_formatter = ColouredFormatter("[PYTHON] %(levelname)s: %(message)s")
+        rust_formatter = ColouredFormatter("[RUST] %(levelname)s: %(message)s")
     else:
-        console_formatter = logging.Formatter("%(levelname)s: %(message)s")
+        console_formatter = logging.Formatter("[PYTHON] %(levelname)s: %(message)s")
+        rust_formatter = logging.Formatter("[RUST] %(levelname)s: %(message)s")
+
+    rust_handler.setFormatter(rust_formatter)
+    handlers.append(rust_handler)
 
     console_handler.setFormatter(console_formatter)
     handlers.append(console_handler)
@@ -77,6 +87,8 @@ def setup_logging(
         level=logging.DEBUG,
         handlers=handlers,
     )
+
+    file_mover.init_logging()
 
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
@@ -110,7 +122,10 @@ class OperationLogger:
         """Logs the end of the operation."""
         import time
 
-        duration = time.time() - self.start_time
+        if self.start_time is not None:
+            duration = time.time() - float(self.start_time)
+        else:
+            duration = 0.0
 
         if exc_type is None:
             self.logger.info(f"Completed: {self.operation_name} in {duration:.2f}s")

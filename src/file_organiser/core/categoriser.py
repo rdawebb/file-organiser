@@ -3,9 +3,9 @@
 from pathlib import Path
 from typing import List, Optional
 
-from file_organiser.plugins.base import CategorisationPlugin
-from file_organiser.plugins.registry import PluginRegistry
-from file_organiser.utils.logging import get_logger
+from src.file_organiser.plugins.base import CategorisationPlugin
+from src.file_organiser.plugins.registry import PluginRegistry
+from src.file_organiser.utils.logging import get_logger
 
 from .models import FileInfo
 
@@ -93,8 +93,9 @@ class FileCategoriser:
         for plugin in self._get_plugins():
             if hasattr(plugin, "get_categories"):
                 try:
-                    plugin_categories = plugin.get_categories()
-                    categories.update(plugin_categories)
+                    get_cats = getattr(plugin, "get_categories", None)
+                    if callable(get_cats):
+                        categories.update(get_cats())
                 except Exception as e:
                     logger.error(
                         f"Plugin '{plugin.metadata.name}' failed to get categories: {e}"
@@ -115,12 +116,15 @@ class FileCategoriser:
         info = {"name": category, "provided_by": [], "description": None}
 
         for plugin in self._get_plugins():
-            if hasattr(plugin, "get_categories"):
-                try:
-                    if category in plugin.get_categories():
-                        info["provided_by"].append(plugin.metadata.name)
-                except Exception:
-                    pass
+            try:
+                get_cats = getattr(plugin, "get_categories", None)
+                if callable(get_cats):
+                    provided_by = info["provided_by"]
+                    if not isinstance(provided_by, list) or provided_by is None:
+                        provided_by = []
+                    provided_by.append(plugin.metadata.name)
+            except Exception:
+                pass
 
         return info
 
@@ -151,7 +155,9 @@ class FileCategoriser:
 
         return {
             "total_plugins": len(plugins),
-            "enabled_plugins": len([p for p in plugins if p.enabled]),
+            "enabled_plugins": len(
+                [p for p in plugins if getattr(p.metadata, "enabled", True)]
+            ),
             "total_categories": len(self.get_all_categories()),
             "fallback_category": self.fallback_category,
             "plugins": [
@@ -175,9 +181,9 @@ class CategoryResolver:
     def register_category(
         self,
         name: str,
-        display_name: str = None,
-        description: str = None,
-        icon: str = None,
+        display_name: str | None,
+        description: str | None,
+        icon: str | None,
     ) -> None:
         """Registers metadata for a category.
 
@@ -223,7 +229,7 @@ _resolver = CategoryResolver()
 
 
 def register_category_metadata(
-    name: str, display_name: str = None, description: str = None, icon: str = None
+    name: str, display_name: str | None, description: str | None, icon: str | None
 ) -> None:
     """Registers category metadata globally.
 

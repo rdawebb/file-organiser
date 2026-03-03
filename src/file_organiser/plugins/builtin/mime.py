@@ -3,11 +3,12 @@
 import mimetypes
 from typing import Optional, Set
 
-from file_organiser.core.models import FileInfo
-from ..base import CategoriserPlugin, PluginMetadata
+from src.file_organiser.core.models import FileInfo
+
+from ..base import CategorisationPlugin, PluginMetadata
 
 
-class MimeTypeCategorisationPlugin(CategoriserPlugin):
+class MimeTypeCategorisationPlugin(CategorisationPlugin):
     """Categorisation plugin based on MIME types."""
 
     def __init__(self) -> None:

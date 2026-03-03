@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Iterator, List, Optional, Union
+from typing import Iterator, List, Optional, Union, cast
+
+from src.file_organiser.plugins.base import ReporterPlugin
+from src.file_organiser.plugins.registry import PluginRegistry
+from src.file_organiser.utils.logging import get_logger
 
 from .categoriser import FileCategoriser
 from .models import FileInfo, MoveResult, MoveStatus, OrganiserResult, OrganiserStats
 from .mover import FileMover, MoveOptions
 from .validators import PathValidator
-from file_organiser.plugins.base import ReporterPlugin
-from file_organiser.plugins.registry import PluginRegistry
-from file_organiser.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -35,6 +36,10 @@ class FileOrganiser:
 
         Args:
             directory (Union[str, Path]): The target directory to organise.
+            plugin_registry (Optional[PluginRegistry], optional): The plugin registry to use. Defaults to None.
+            reporter (Optional[ReporterPlugin], optional): The reporter plugin to use. Defaults to None.
+            categoriser (Optional[FileCategoriser], optional): The file categoriser to use. Defaults to None.
+            mover (Optional[FileMover], optional): The file mover to use. Defaults to None.
             include_hidden (bool, optional): Whether to include hidden files. Defaults to False.
             validate_paths (bool, optional): Whether to validate paths before organising. Defaults to True.
         """
@@ -54,7 +59,7 @@ class FileOrganiser:
 
     def organise_files(
         self, *, dry_run: bool = False, exclude_patterns: Optional[List[str]] = None
-    ) -> None:
+    ) -> OrganiserResult:
         """Organises files in the target directory
 
         Args:
@@ -78,11 +83,13 @@ class FileOrganiser:
             logger.info("No files found to organise.")
             return OrganiserResult.from_stats(stats, 0.0, dry_run)
 
-        self.reporter.on_start(total_files=len(files))
+        if self.reporter:
+            reporter = cast(ReporterPlugin, self.reporter)
+            reporter.on_start(total_files=len(files))
 
         try:
             for file_info in files:
-                self.reporter.on_file_processing(file_info)
+                reporter.on_file_processing(file_info)
 
                 if self._is_in_category_folder(file_info.path):
                     result = MoveResult(
@@ -99,11 +106,11 @@ class FileOrganiser:
                 result = self._move_file(file_info, category, dry_run)
                 stats.record_result(result)
 
-                self.reporter.on_file_processed(result)
+                reporter.on_file_processed(result)
 
                 if result.success:
                     logger.debug(
-                        f"Moved: {file_info.name} -> {category}/{result.destination.name}"
+                        f"Moved: {file_info.name} -> {category}/{result.destination.name if result.destination else 'unknown'}"
                     )
                 else:
                     logger.error(f"Failed to move {file_info.name}: {result.error}")
@@ -115,7 +122,7 @@ class FileOrganiser:
         finally:
             duration = time.time() - start_time
             result = OrganiserResult.from_stats(stats, duration, dry_run)
-            self.reporter.on_complete(result)
+            reporter.on_complete(result)
 
             logger.info(
                 f"Organisation complete: {result.files_moved} files moved, "
@@ -198,7 +205,7 @@ class FileOrganiser:
 
         result = self.mover.move_file(
             source=file_info.path,
-            destination_dir=category_folder,
+            destination=category_folder,
             filename=file_info.name,
             dry_run=dry_run,
             category=category,

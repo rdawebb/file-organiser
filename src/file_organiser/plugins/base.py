@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
+from src.file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
 
 
 @dataclass

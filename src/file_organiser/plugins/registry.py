@@ -3,6 +3,8 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
+from src.file_organiser.utils.logging import get_logger
+
 from .base import (
     CategorisationPlugin,
     FilterPlugin,
@@ -10,7 +12,6 @@ from .base import (
     PostProcessingPlugin,
     ReporterPlugin,
 )
-from file_organiser.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -39,7 +40,9 @@ class PluginRegistry:
 
         if isinstance(plugin, CategorisationPlugin):
             self._categorisation_plugins.append(plugin)
-            self._categorisation_plugins.sort(key=lambda p: p.metadata.priority)
+            self._categorisation_plugins.sort(
+                key=lambda p: p.metadata.priority, reverse=True
+            )
 
         if isinstance(plugin, ReporterPlugin):
             self._reporter_plugins.append(plugin)
@@ -112,7 +115,8 @@ class PluginRegistry:
         Returns:
             Optional[ReporterPlugin]: The default reporter plugin or None.
         """
-        pass
+        enabled = [p for p in self._reporter_plugins if p.metadata.enabled]
+        return enabled[0] if enabled else None
 
     def get_plugin(self, plugin_name: str) -> Optional[Plugin]:
         """Retrieves a plugin by name.
@@ -133,8 +137,9 @@ class PluginRegistry:
         """
         categories = set()
         for plugin in self.get_categorisation_plugins():
-            if hasattr(plugin, "get_categories"):
-                categories.update(plugin.get_categories())
+            get_cats = getattr(plugin, "get_categories", None)
+            if callable(get_cats):
+                categories.update(get_cats())
         categories.add("Unknown")
 
         return categories
@@ -164,10 +169,14 @@ class PluginRegistry:
         Returns:
             PluginRegistry: A new instance of PluginRegistry.
         """
+        from src.file_organiser.plugins.builtin.extension import (
+            ExtensionCategorisationPlugin,
+        )
+        from src.file_organiser.plugins.builtin.reporters import RichReporterPlugin
+
         registry = cls()
-
-        # Not yet implemented: load default plugins here
-
+        registry.register(ExtensionCategorisationPlugin(custom_extensions=None))
+        registry.register(RichReporterPlugin())
         return registry
 
     def load_from_directory(self, plugins_dir: Path) -> None:
@@ -181,7 +190,7 @@ class PluginRegistry:
             return
 
         for plugin_file in plugins_dir.glob("*.py"):
-            if plugin_file.startswith("_"):
+            if plugin_file.name.startswith("_"):
                 continue
 
             try:

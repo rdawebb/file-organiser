@@ -6,10 +6,11 @@ from typing import Optional
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
+from rich.progress import Progress, SpinnerColumn, TaskID, TimeElapsedColumn
 from rich.table import Table
 
-from file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
+from src.file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
+
 from ..base import PluginMetadata, ReporterPlugin
 
 
@@ -25,7 +26,7 @@ class RichReporterPlugin(ReporterPlugin):
         self.verbose = verbose
         self.console = Console()
         self.progress: Optional[Progress] = None
-        self.task_id: Optional[int] = None
+        self.task_id: Optional[TaskID] = None
 
     @property
     def metadata(self) -> PluginMetadata:

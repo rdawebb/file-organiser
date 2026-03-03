@@ -59,6 +59,13 @@ class OrganiserStats:
                 if result.category == "Unknown":
                     self.unknown_files += 1
 
+        elif result.status == MoveStatus.DRY_RUN:
+            self.files_moved += 1
+            if result.category:
+                self.categories_used.add(result.category)
+                if result.category == "Unknown":
+                    self.unknown_files += 1
+
         elif result.failed:
             self.files_failed += 1
             if result.error:

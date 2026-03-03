@@ -1,20 +1,19 @@
 """Plugin for categorising files based on their extensions."""
 
-import json
+import ast
 from pathlib import Path
 from typing import Optional, Set
 
-from file_organiser.core.models import FileInfo
-from ..base import CategoriserPlugin, PluginMetadata
+from src.file_organiser.core.models import FileInfo
 
-EXTENSIONS_PATH = (
-    Path(__file__).parent.parent.parent / "data" / "default_extensions.json"
-)
+from ..base import CategorisationPlugin, PluginMetadata
+
+EXTENSIONS_PATH = Path(__file__).parent.parent.parent / "data" / "default_extensions.py"
 with open(EXTENSIONS_PATH, "r", encoding="utf-8") as f:
-    EXTENSIONS = json.load(f)
+    EXTENSIONS: dict[str, str] = ast.literal_eval(f.read())
 
 
-class ExtensionCategorisationPlugin(CategoriserPlugin):
+class ExtensionCategorisationPlugin(CategorisationPlugin):
     """Categorisation plugin based on file extensions."""
 
     def __init__(self, custom_extensions: Optional[dict[str, str]]) -> None:

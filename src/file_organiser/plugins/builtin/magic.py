@@ -2,11 +2,12 @@
 
 from typing import Optional, Set
 
-from file_organiser.core.models import FileInfo
-from ..base import CategoriserPlugin, PluginMetadata
+from src.file_organiser.core.models import FileInfo
+
+from ..base import CategorisationPlugin, PluginMetadata
 
 
-class MagicNumberCategorisationPlugin(CategoriserPlugin):
+class MagicNumberCategorisationPlugin(CategorisationPlugin):
     """Categorisation plugin based on file magic numbers."""
 
     def __init__(self) -> None:
