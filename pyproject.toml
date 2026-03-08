@@ -22,6 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Rust",
     "Topic :: System :: Filesystems",
 ]
@@ -38,9 +40,9 @@ dev = [
     "pytest-cov>=7.0.0,<8.0.0",
     "pytest-mock>=3.14.0,<4.0.0",
     "pytest-timeout>=2.4.0,<3.0.0",
-    "ruff>=0.15.4,<1.0.0",
+    "ruff>=0.15.5,<1.0.0",
     "rust-just>=1.46.0,<2.0.0",
-    "ty>=0.0.20,<1.0.0"
+    "ty>=0.0.21,<1.0.0"
 ]
 
 [project.urls]
