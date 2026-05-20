@@ -1,5 +1,13 @@
 """Unit tests for mover module."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from os import stat_result
+    from pathlib import Path
+
+    from file_organiser.core.models import MoveResult
+
 from src.file_organiser.core.models import MoveStatus
 from src.file_organiser.core.mover import FileMover, MoveOptions
 
@@ -57,13 +65,13 @@ class TestFileMoveOperations:
 
     def test_move_file_success(self, tmp_path, file_mover):
         """Test successful file move."""
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        result = file_mover.move_file(source, dest_dir)
+        result: MoveResult = file_mover.move_file(source, dest_dir)
 
         assert result.status == MoveStatus.SUCCESS
         assert result.source == source
@@ -72,26 +80,26 @@ class TestFileMoveOperations:
 
     def test_move_file_dry_run(self, tmp_path, file_mover):
         """Test dry run file move."""
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        result = file_mover.move_file(source, dest_dir, dry_run=True)
+        result: MoveResult = file_mover.move_file(source, dest_dir, dry_run=True)
 
         assert result.status == MoveStatus.DRY_RUN
         assert source.exists()  # Should still exist
 
     def test_move_file_with_filename(self, tmp_path, file_mover):
         """Test moving file with filename parameter."""
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        result = file_mover.move_file(
+        result: MoveResult = file_mover.move_file(
             source,
             dest_dir,
             filename="renamed.txt",
@@ -103,13 +111,13 @@ class TestFileMoveOperations:
 
     def test_move_file_with_category(self, tmp_path, file_mover):
         """Test moving file with category parameter."""
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        result = file_mover.move_file(
+        result: MoveResult = file_mover.move_file(
             source,
             dest_dir,
             category="Documents",
@@ -122,12 +130,12 @@ class TestFileMoveOperations:
         options = MoveOptions(create_dirs=True)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "nested" / "destination"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "nested" / "destination"
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        mover.move_file(source, dest_dir)
+        mover.move_file(source, destination=dest_dir)
 
         # Should create nested directories
         assert dest_dir.exists()
@@ -138,11 +146,11 @@ class TestFileMoverErrorHandling:
 
     def test_move_nonexistent_file(self, tmp_path, file_mover):
         """Test moving a file that doesn't exist."""
-        source = tmp_path / "nonexistent.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "nonexistent.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        result = file_mover.move_file(source, dest_dir)
+        result: MoveResult = file_mover.move_file(source, dest_dir)
 
         assert result.status == MoveStatus.FAILED
         assert result.error is not None
@@ -152,12 +160,12 @@ class TestFileMoverErrorHandling:
         options = MoveOptions(create_dirs=False)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "nonexistent"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "nonexistent"
 
-        source.write_text("test content")
+        source.write_text(data="test content")
 
-        result = mover.move_file(source, dest_dir)
+        result: MoveResult = mover.move_file(source, destination=dest_dir)
 
         assert result.status == MoveStatus.FAILED
 
@@ -170,15 +178,15 @@ class TestFileOverwrite:
         options = MoveOptions(overwrite_existing=False)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
-        existing = dest_dir / "source.txt"
+        existing: Path = dest_dir / "source.txt"
 
-        source.write_text("new content")
-        existing.write_text("existing content")
+        source.write_text(data="new content")
+        existing.write_text(data="existing content")
 
-        result = mover.move_file(source, dest_dir)
+        result: MoveResult = mover.move_file(source, destination=dest_dir)
 
         # Should skip if file exists and overwrite=False
         if result.status == MoveStatus.SUCCESS:
@@ -193,15 +201,15 @@ class TestFileOverwrite:
         options = MoveOptions(overwrite_existing=True)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
-        existing = dest_dir / "source.txt"
+        existing: Path = dest_dir / "source.txt"
 
-        source.write_text("new content")
-        existing.write_text("old content")
+        source.write_text(data="new content")
+        existing.write_text(data="old content")
 
-        result = mover.move_file(source, dest_dir)
+        result: MoveResult = mover.move_file(source, destination=dest_dir)
 
         if result.status == MoveStatus.SUCCESS:
             assert existing.read_text() == "new content"
@@ -215,17 +223,17 @@ class TestMetadataPreservation:
         options = MoveOptions(preserve_metadata=True)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content")
-        source_stat = source.stat()
+        source.write_text(data="test content")
+        source_stat: stat_result = source.stat()
 
-        result = mover.move_file(source, dest_dir)
+        result: MoveResult = mover.move_file(source, destination=dest_dir)
 
         if result.status == MoveStatus.SUCCESS and result.destination:
-            dest_stat = result.destination.stat()
+            dest_stat: stat_result = result.destination.stat()
             # Mode should be preserved (if not modified by filesystem)
             assert dest_stat.st_size == source_stat.st_size
 
@@ -238,12 +246,12 @@ class TestChecksumVerification:
         options = MoveOptions(verify_checksum=True)
         mover = FileMover(options=options)
 
-        source = tmp_path / "source.txt"
-        dest_dir = tmp_path / "dest"
+        source: Path = tmp_path / "source.txt"
+        dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        source.write_text("test content for checksum verification")
+        source.write_text(data="test content for checksum verification")
 
-        result = mover.move_file(source, dest_dir)
+        result: MoveResult = mover.move_file(source, destination=dest_dir)
 
         assert result.status in [MoveStatus.SUCCESS, MoveStatus.DRY_RUN]

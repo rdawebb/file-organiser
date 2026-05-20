@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from logging import Logger
 from pathlib import Path
 from typing import Iterator, List, Optional, Union, cast
 
@@ -15,7 +16,7 @@ from .models import FileInfo, MoveResult, MoveStatus, OrganiserResult, Organiser
 from .mover import FileMover, MoveOptions
 from .validators import PathValidator
 
-logger = get_logger(__name__)
+logger: Logger = get_logger(name=__name__)
 
 
 class FileOrganiser:
@@ -43,19 +44,25 @@ class FileOrganiser:
             include_hidden (bool, optional): Whether to include hidden files. Defaults to False.
             validate_paths (bool, optional): Whether to validate paths before organising. Defaults to True.
         """
-        self.directory = Path(directory).resolve()
-        self.include_hidden = include_hidden
+        self.directory: Path = Path(directory).resolve()
+        self.include_hidden: bool = include_hidden
 
         if validate_paths:
             PathValidator.validate_directory(self.directory)
-            logger.info(f"Validated directory: {self.directory}")
+            logger.info(msg=f"Validated directory: {self.directory}")
 
-        self.plugins = plugin_registry or PluginRegistry.create_default()
-        self.reporter = reporter or self.plugins.get_default_reporter()
-        self.categoriser = categoriser or FileCategoriser(self.plugins)
-        self.mover = mover or FileMover(MoveOptions())
+        self.plugins: PluginRegistry = (
+            plugin_registry or PluginRegistry.create_default()
+        )
+        self.reporter: ReporterPlugin | None = (
+            reporter or self.plugins.get_default_reporter()
+        )
+        self.categoriser: FileCategoriser = categoriser or FileCategoriser(
+            plugin_registry=self.plugins
+        )
+        self.mover: FileMover = mover or FileMover(options=MoveOptions())
 
-        logger.debug(f"FileOrganiser initialised for {self.directory}")
+        logger.debug(msg=f"FileOrganiser initialised for {self.directory}")
 
     def organise_files(
         self, *, dry_run: bool = False, exclude_patterns: Optional[List[str]] = None
@@ -69,63 +76,69 @@ class FileOrganiser:
         Raises:
             KeyboardInterrupt: If the operation is interrupted by the user.
         """
-        start_time = time.time()
+        start_time: int | float = time.time()
         stats = OrganiserStats()
 
         logger.info(
-            f"Starting file organisation: {self.directory} "
+            msg=f"Starting file organisation: {self.directory} "
             f"{'(dry run)' if dry_run else ''}"
         )
 
-        files = list(self._discover_files(exclude_patterns or []))
+        files: list[FileInfo] = list(
+            self._discover_files(exclude_patterns=exclude_patterns or [])
+        )
 
         if not files:
-            logger.info("No files found to organise.")
-            return OrganiserResult.from_stats(stats, 0.0, dry_run)
+            logger.info(msg="No files found to organise.")
+            return OrganiserResult.from_stats(
+                stats, duration_seconds=0.0, dry_run=dry_run
+            )
 
         if self.reporter:
-            reporter = cast(ReporterPlugin, self.reporter)
+            reporter: ReporterPlugin = cast(typ=ReporterPlugin, val=self.reporter)
             reporter.on_start(total_files=len(files))
 
         try:
             for file_info in files:
                 reporter.on_file_processing(file_info)
 
-                if self._is_in_category_folder(file_info.path):
+                if self._is_in_category_folder(file_path=file_info.path):
                     result = MoveResult(
                         status=MoveStatus.SKIPPED,
                         source=file_info.path,
                         destination=None,
                     )
                     stats.record_result(result)
-                    logger.debug(f"Skipped (already organised): {file_info.path}")
+                    logger.debug(msg=f"Skipped (already organised): {file_info.path}")
                     continue
 
-                category = self._categorise_file(file_info)
+                category: str = self._categorise_file(file_info)
 
-                result = self._move_file(file_info, category, dry_run)
+                result: MoveResult = self._move_file(file_info, category, dry_run)
                 stats.record_result(result)
 
                 reporter.on_file_processed(result)
 
                 if result.success:
                     logger.debug(
-                        f"Moved: {file_info.name} -> {category}/{result.destination.name if result.destination else 'unknown'}"
+                        msg=f"Moved: {file_info.name} -> {category}/{result.destination.name if result.destination else 'unknown'}"
                     )
                 else:
-                    logger.error(f"Failed to move {file_info.name}: {result.error}")
+                    logger.error(msg=f"Failed to move {file_info.name}: {result.error}")
 
         except KeyboardInterrupt:
-            logger.warning("File organisation interrupted by user.")
+            logger.warning(msg="File organisation interrupted by user.")
             raise
 
         finally:
-            duration = time.time() - start_time
-            result = OrganiserResult.from_stats(stats, duration, dry_run)
+            duration: int | float = time.time() - start_time
+            result: OrganiserResult = OrganiserResult.from_stats(
+                stats, duration_seconds=duration, dry_run=dry_run
+            )
             reporter.on_complete(result)
 
             logger.info(
-                f"Organisation complete: {result.files_moved} files moved, "
+                msg=f"Organisation complete: {result.files_moved} files moved, "
                 f"{result.files_skipped} files skipped, {result.files_failed} failed "
                 f"(Duration: {duration:.2f}s)"
             )
@@ -143,29 +156,29 @@ class FileOrganiser:
         """
         import fnmatch
 
-        logger.debug(f"Discovering files in {self.directory}")
+        logger.debug(msg=f"Discovering files in {self.directory}")
 
-        for file_path in self.directory.rglob("*"):
+        for file_path in self.directory.rglob(pattern="*"):
             if file_path.is_symlink():
-                logger.debug(f"Skipping symlink: {file_path}")
+                logger.debug(msg=f"Skipping symlink: {file_path}")
                 continue
 
             if not file_path.is_file():
                 continue
 
             if not self.include_hidden and file_path.name.startswith("."):
-                logger.debug(f"Skipping hidden file: {file_path}")
+                logger.debug(msg=f"Skipping hidden file: {file_path}")
                 continue
 
-            relative_path = file_path.relative_to(self.directory)
+            relative_path: Path = file_path.relative_to(self.directory)
             if any(
-                fnmatch.fnmatch(str(relative_path), pattern)
+                fnmatch.fnmatch(name=str(object=relative_path), pat=pattern)
                 for pattern in exclude_patterns
             ):
-                logger.debug(f"Excluding file by pattern: {file_path}")
+                logger.debug(msg=f"Excluding file by pattern: {file_path}")
                 continue
 
-            yield FileInfo.from_path(file_path)
+            yield FileInfo.from_path(path=file_path)
 
     def _categorise_file(self, file_info: FileInfo) -> str:
         """Determines the category of a file based on type
@@ -176,12 +189,12 @@ class FileOrganiser:
         Returns:
             str: The determined category for the file.
         """
-        category = self.categoriser.categorise(file_info)
+        category: str = self.categoriser.categorise(file_info)
 
         if category == "unknown":
-            logger.debug(f"Could not categorise file: {file_info.name}")
+            logger.debug(msg=f"Could not categorise file: {file_info.name}")
         else:
-            logger.debug(f"Categorised file {file_info.name} as {category}")
+            logger.debug(msg=f"Categorised file {file_info.name} as {category}")
 
         return category
 
@@ -201,9 +214,9 @@ class FileOrganiser:
         Raises:
             Exception: If the move operation fails.
         """
-        category_folder = self.directory / category
+        category_folder: Path = self.directory / category
 
-        result = self.mover.move_file(
+        result: MoveResult = self.mover.move_file(
             source=file_info.path,
             destination=category_folder,
             filename=file_info.name,
@@ -225,13 +238,13 @@ class FileOrganiser:
             ValueError: If the file path is not relative to the organiser directory.
         """
         try:
-            relative_path = file_path.relative_to(self.directory)
+            relative_path: Path = file_path.relative_to(self.directory)
 
             if len(relative_path.parents) == 1:
                 return False
 
-            parent_name = relative_path.parents[-2].name
-            known_categories = self.categoriser.get_all_categories()
+            parent_name: str = relative_path.parents[-2].name
+            known_categories: set[str] = self.categoriser.get_all_categories()
 
             return parent_name in known_categories
 

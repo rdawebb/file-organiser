@@ -13,7 +13,7 @@ class MimeTypeCategorisationPlugin(CategorisationPlugin):
 
     def __init__(self) -> None:
         """Initialises the MIME type categorisation plugin."""
-        self._mime_mapping = {
+        self._mime_mapping: dict[str, str] = {
             "text": "text",
             "image": "images",
             "audio": "audio",
@@ -46,11 +46,11 @@ class MimeTypeCategorisationPlugin(CategorisationPlugin):
         Returns:
             Optional[str]: The category name if categorised, else None.
         """
-        mime_type, _ = mimetypes.guess_type(str(file_info.path))
+        mime_type, _ = mimetypes.guess_type(url=str(object=file_info.path))
         if not mime_type:
             return None
 
-        main_type = mime_type.split("/")[0]
+        main_type: str = mime_type.split(sep="/")[0]
 
         return self._mime_mapping.get(main_type)
 

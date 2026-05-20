@@ -120,7 +120,7 @@ class RealFileSystem(FileSystemAdapter):
     def list_files(self, directory: Path, recursive: bool = False) -> Iterator[Path]:
         """Lists all files in a directory."""
         if recursive:
-            for file_path in directory.rglob("*"):
+            for file_path in directory.rglob(pattern="*"):
                 if file_path.is_file():
                     yield file_path
         else:
@@ -130,7 +130,7 @@ class RealFileSystem(FileSystemAdapter):
 
     def move_file(self, source: Path, destination: Path) -> None:
         """Moves a file from source to destination."""
-        shutil.move(str(source), str(destination))
+        shutil.move(src=str(object=source), dst=str(object=destination))
 
     def create_directory(self, path: Path, parents: bool = True) -> None:
         """Creates a directory at the specified path."""
@@ -218,7 +218,7 @@ class InMemoryFileSystem(FileSystemAdapter):
     def clear(self) -> None:
         """Clears the in-memory filesystem."""
         self.files.clear()
-        self.directories = {Path("/")}
+        self.directories: set[Path] = {Path("/")}
 
 
 def get_file_info(path: Path, fs: Optional[FileSystemAdapter] = None) -> dict:
@@ -278,6 +278,6 @@ def get_directory_size(directory: Path, fs: Optional[FileSystemAdapter] = None) 
 
     total_size = 0
     for file_path in fs.list_files(directory, recursive=True):
-        total_size += fs.get_size(file_path)
+        total_size += fs.get_size(path=file_path)
 
     return total_size

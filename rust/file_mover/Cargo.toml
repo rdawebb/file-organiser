@@ -5,7 +5,7 @@ edition = "2021"
 
 [lib]
 name = "file_mover"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 blake3 = ">=1.8.0, <2.0.0"

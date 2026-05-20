@@ -1,14 +1,15 @@
 """Unit tests for models module."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from src.file_organiser.core.models import (
     FileInfo,
     MoveResult,
     MoveStatus,
-    OrganiserStats,
     OrganiserResult,
+    OrganiserStats,
 )
 
 
@@ -148,7 +149,7 @@ class TestMoveResult:
             destination=Path("dest/test.txt"),
         )
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(expected_exception=AttributeError):
             setattr(result, "status", MoveStatus.FAILED)
 
 
@@ -237,7 +238,7 @@ class TestOrganiserStats:
     def test_record_multiple_results(self):
         """Test recording multiple results."""
         stats = OrganiserStats()
-        results = [
+        results: list[MoveResult] = [
             MoveResult(
                 status=MoveStatus.SUCCESS,
                 source=Path("doc.txt"),
@@ -310,7 +311,7 @@ class TestOrganiserResult:
         stats = OrganiserStats()
 
         stats.record_result(
-            MoveResult(
+            result=MoveResult(
                 status=MoveStatus.SUCCESS,
                 source=Path("file.txt"),
                 destination=Path("dest/file.txt"),
@@ -318,7 +319,7 @@ class TestOrganiserResult:
             )
         )
         stats.record_result(
-            MoveResult(
+            result=MoveResult(
                 status=MoveStatus.FAILED,
                 source=Path("error.txt"),
                 destination=None,
@@ -326,7 +327,9 @@ class TestOrganiserResult:
             )
         )
 
-        result = OrganiserResult.from_stats(stats, 1.5, dry_run=False)
+        result: OrganiserResult = OrganiserResult.from_stats(
+            stats, duration_seconds=1.5, dry_run=False
+        )
 
         assert result.files_processed == 2
         assert result.files_moved == 1
@@ -337,7 +340,7 @@ class TestOrganiserResult:
 
     def test_organiser_result_with_errors(self):
         """Test OrganiserResult with error details."""
-        errors = [
+        errors: list[tuple[Path, Exception]] = [
             (Path("file1.txt"), Exception("Error 1")),
             (Path("file2.txt"), Exception("Error 2")),
         ]
@@ -369,5 +372,5 @@ class TestOrganiserResult:
             duration_seconds=1.0,
         )
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(expected_exception=AttributeError):
             setattr(result, "files_processed", 20)

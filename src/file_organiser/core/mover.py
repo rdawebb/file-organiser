@@ -1,15 +1,17 @@
 """Handles moving files with safety checks and options."""
 
 from dataclasses import dataclass
+from logging import Logger
 from pathlib import Path
 from typing import Optional
 
-from .models import MoveResult, MoveStatus
-from src.file_organiser.utils.logging import get_logger
-
 from file_mover import file_mover
 
-logger = get_logger(__name__)
+from src.file_organiser.utils.logging import get_logger
+
+from .models import MoveResult, MoveStatus
+
+logger: Logger = get_logger(name=__name__)
 
 
 def _result_to_move_result(result: file_mover.MoveResult) -> MoveResult:
@@ -21,22 +23,22 @@ def _result_to_move_result(result: file_mover.MoveResult) -> MoveResult:
     Returns:
         MoveResult: The converted Python MoveResult.
     """
-    status_map = {
+    status_map: dict[str, MoveStatus] = {
         "SUCCESS": MoveStatus.SUCCESS,
         "FAILED": MoveStatus.FAILED,
         "SKIPPED": MoveStatus.SKIPPED,
         "DRY_RUN": MoveStatus.DRY_RUN,
     }
 
-    status_str = str(result.status)
+    status_str = str(object=result.status)
     if "." in status_str:
-        status_str = status_str.split(".")[-1]
-    status = status_map.get(status_str, MoveStatus.FAILED)
+        status_str: str = status_str.split(sep=".")[-1]
+    status: MoveStatus = status_map.get(status_str, MoveStatus.FAILED)
 
     source = Path(result.source)
-    destination = Path(result.destination) if result.destination else None
-    error = Exception(result.error) if result.error else None
-    category = result.category
+    destination: Path | None = Path(result.destination) if result.destination else None
+    error: Exception | None = Exception(result.error) if result.error else None
+    category: str = result.category
 
     return MoveResult(
         status=status,
@@ -67,15 +69,15 @@ class FileMover:
         Args:
             options (MoveOptions): The options to configure the file mover.
         """
-        self.options = options or MoveOptions()
-        py_options = file_mover.MoveOptions(
+        self.options: MoveOptions = options or MoveOptions()
+        py_options: MoveResult = file_mover.MoveOptions(
             atomic=self.options.atomic,
             verify_checksum=self.options.verify_checksum,
             preserve_metadata=self.options.preserve_metadata,
             create_dirs=self.options.create_dirs,
             overwrite_existing=self.options.overwrite_existing,
         )
-        self.mover = file_mover.FileMover(options=py_options)
+        self.mover: file_mover.FileMover = file_mover.FileMover(options=py_options)
 
     def move_file(
         self,
@@ -97,15 +99,15 @@ class FileMover:
         Returns:
             MoveResult: The result of the move operation.
         """
-        result = self.mover.move_file(
-            str(source),
-            str(destination),
+        result: MoveResult = self.mover.move_file(
+            str(object=source),
+            str(object=destination),
             filename=filename,
             category=category,
             dry_run=dry_run,
         )
 
-        py_result = _result_to_move_result(result)
+        py_result: MoveResult = _result_to_move_result(result)
 
         return py_result
 
@@ -127,14 +129,14 @@ class FileMover:
         Returns:
             MoveResult: The result of the move operation.
         """
-        result = self.mover.move_files_batch(
-            [str(source) for source in sources],
-            str(destination),
+        result: MoveResult = self.mover.move_files_batch(
+            [str(object=source) for source in sources],
+            str(object=destination),
             category=category,
             dry_run=dry_run,
         )
 
-        py_result = _result_to_move_result(result)
+        py_result: MoveResult = _result_to_move_result(result)
 
         if py_result.failed:
             raise IOError(py_result.error)

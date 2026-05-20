@@ -30,12 +30,15 @@ class MockCategorisationPlugin(CategorisationPlugin):
             should_fail: If True, raise exception during categorisation
             priority: Plugin priority
         """
-        self.name = name
-        self.category_map = category_map or {".txt": "Documents", ".py": "Code"}
-        self.should_fail = should_fail
-        self.priority = priority
-        self.call_count = 0
-        self.categorised_files = []
+        self.name: str = name
+        self.category_map: dict[str, str] = category_map or {
+            ".txt": "Documents",
+            ".py": "Code",
+        }
+        self.should_fail: bool = should_fail
+        self.priority: int = priority
+        self.call_count: int = 0
+        self.categorised_files: list[FileInfo] = []
         self._metadata = PluginMetadata(
             name=self.name,
             version="0.1.0",
@@ -78,9 +81,9 @@ class MockFilterPlugin(FilterPlugin):
             name: Plugin name
             exclude_all: If True, exclude all files
         """
-        self.name = name
-        self.exclude_all = exclude_all
-        self.checked_files = []
+        self.name: str = name
+        self.exclude_all: bool = exclude_all
+        self.checked_files: list[FileInfo] = []
         self._metadata = PluginMetadata(
             name=self.name,
             version="0.1.0",
@@ -108,14 +111,14 @@ class MockReporterPlugin(ReporterPlugin):
         Args:
             name: Plugin name
         """
-        self.name = name
-        self.start_called = False
-        self.total_files = 0
-        self.processing_files = []
-        self.processed_results = []
-        self.complete_result = None
-        self.complete_called = False
-        self._metadata = PluginMetadata(
+        self.name: str = name
+        self.start_called: bool = False
+        self.total_files: int = 0
+        self.processing_files: list[FileInfo] = []
+        self.processed_results: list[MoveResult] = []
+        self.complete_result: OrganiserResult
+        self.complete_called: bool = False
+        self._metadata: PluginMetadata = PluginMetadata(
             name=self.name,
             version="0.1.0",
             author="Test",
@@ -130,7 +133,7 @@ class MockReporterPlugin(ReporterPlugin):
     def on_start(self, total_files: int) -> None:
         """Called when organisation starts."""
         self.start_called = True
-        self.total_files = total_files
+        self.total_files: int = total_files
 
     def on_file_processing(self, file_info: FileInfo) -> None:
         """Called when processing a file."""
@@ -143,7 +146,7 @@ class MockReporterPlugin(ReporterPlugin):
     def on_complete(self, result: OrganiserResult) -> None:
         """Called when organisation is complete."""
         self.complete_called = True
-        self.complete_result = result
+        self.complete_result: OrganiserResult = result
 
 
 class MockPostProcessingPlugin(PostProcessingPlugin):
@@ -156,9 +159,9 @@ class MockPostProcessingPlugin(PostProcessingPlugin):
             name: Plugin name
             should_fail: If True, raise exception during post-processing
         """
-        self.name = name
-        self.should_fail = should_fail
-        self.processed_results = []
+        self.name: str = name
+        self.should_fail: bool = should_fail
+        self.processed_results: list[tuple[MoveResult, FileInfo]] = []
         self._metadata = PluginMetadata(
             name=self.name,
             version="0.1.0",

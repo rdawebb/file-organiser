@@ -1,12 +1,11 @@
 """Unit tests for base plugin classes."""
 
 from src.file_organiser.plugins.base import PluginMetadata
-
 from tests.fixtures.mock_plugins import (
     MockCategorisationPlugin,
-    MockReporterPlugin,
     MockFilterPlugin,
     MockPostProcessingPlugin,
+    MockReporterPlugin,
 )
 
 
@@ -68,8 +67,9 @@ class TestCategorisationPlugin:
         """Test categorise method."""
         plugin = MockCategorisationPlugin(category_map={".txt": "Documents"})
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -79,7 +79,7 @@ class TestCategorisationPlugin:
             modified_time=0,
         )
 
-        category = plugin.categorise(file_info)
+        category: str | None = plugin.categorise(file_info)
 
         assert category == "Documents"
 
@@ -87,8 +87,9 @@ class TestCategorisationPlugin:
         """Test default can_categorise returns True."""
         plugin = MockCategorisationPlugin()
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.xyz"),
@@ -107,7 +108,7 @@ class TestCategorisationPlugin:
             category_map={".txt": "Documents", ".py": "Code"}
         )
 
-        categories = plugin.get_categories()
+        categories: set[str] = plugin.get_categories()
 
         assert "Documents" in categories
         assert "Code" in categories
@@ -136,8 +137,9 @@ class TestReporterPlugin:
         """Test on_file_processing method."""
         plugin = MockReporterPlugin()
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -156,8 +158,9 @@ class TestReporterPlugin:
         """Test on_file_processed method."""
         plugin = MockReporterPlugin()
 
-        from src.file_organiser.core.models import MoveResult, MoveStatus
         from pathlib import Path
+
+        from src.file_organiser.core.models import MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,
@@ -207,8 +210,9 @@ class TestFilterPlugin:
         """Test should_process method."""
         plugin = MockFilterPlugin(exclude_all=False)
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -218,7 +222,7 @@ class TestFilterPlugin:
             modified_time=0,
         )
 
-        should_process = plugin.should_process(file_info)
+        should_process: bool = plugin.should_process(file_info)
 
         assert should_process
 
@@ -226,8 +230,9 @@ class TestFilterPlugin:
         """Test should_process method when excluding."""
         plugin = MockFilterPlugin(exclude_all=True)
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -237,7 +242,7 @@ class TestFilterPlugin:
             modified_time=0,
         )
 
-        should_process = plugin.should_process(file_info)
+        should_process: bool = plugin.should_process(file_info)
 
         assert not should_process
 
@@ -256,8 +261,9 @@ class TestPostProcessingPlugin:
         """Test process method."""
         plugin = MockPostProcessingPlugin()
 
-        from src.file_organiser.core.models import MoveResult, MoveStatus, FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo, MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,
@@ -273,7 +279,7 @@ class TestPostProcessingPlugin:
             modified_time=0,
         )
 
-        plugin.process(result, file_info)
+        plugin.process(result, original_info=file_info)
 
         assert len(plugin.processed_results) == 1
 
@@ -281,8 +287,9 @@ class TestPostProcessingPlugin:
         """Test process method with failure."""
         plugin = MockPostProcessingPlugin(should_fail=True)
 
-        from src.file_organiser.core.models import MoveResult, MoveStatus, FileInfo
         from pathlib import Path
+
+        from src.file_organiser.core.models import FileInfo, MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,
@@ -299,6 +306,6 @@ class TestPostProcessingPlugin:
         )
 
         try:
-            plugin.process(result, file_info)
+            plugin.process(result, original_info=file_info)
         except Exception as e:
-            assert "Mock post-processing failure" in str(e)
+            assert "Mock post-processing failure" in str(object=e)

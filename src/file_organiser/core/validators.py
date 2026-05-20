@@ -50,7 +50,7 @@ class PathValidator:
             ValueError: If the path is not a directory or is forbidden
             PermissionError: If there are insufficient permissions to access the directory
         """
-        directory = directory.resolve()
+        directory: Path = directory.resolve()
 
         if not directory.exists():
             raise FileNotFoundError(f"Directory does not exist: {directory}")
@@ -58,7 +58,7 @@ class PathValidator:
         if not directory.is_dir():
             raise NotADirectoryError(f"Path is not a directory: {directory}")
 
-        if not os.access(directory, os.R_OK | os.W_OK):
+        if not os.access(path=directory, mode=os.R_OK | os.W_OK):
             raise PermissionError(
                 f"Insufficient permissions for directory: {directory}"
             )
@@ -94,7 +94,7 @@ class PathValidator:
                     )
 
             except (ValueError, AttributeError):
-                if str(forbidden).startswith(str(directory) + os.sep):
+                if str(object=forbidden).startswith(str(object=directory) + os.sep):
                     raise ValueError(
                         f"Directory contains system path {forbidden}: {directory}"
                     )
@@ -112,7 +112,9 @@ class PathValidator:
         """
         import re
 
-        if not re.match(r"^[a-z0-9 _-]+$", category, re.IGNORECASE):
+        if not re.match(
+            pattern=r"^[a-z0-9 _-]+$", string=category, flags=re.IGNORECASE
+        ):
             raise ValueError(
                 f"Invalid category name: '{category}'",
                 "Must contain only letters, numbers, underscores, and hyphens.",

@@ -14,7 +14,7 @@ def create_organised_directory(base_dir: Path) -> dict:
     """
     base_dir.mkdir(parents=True, exist_ok=True)
 
-    categories = {
+    categories: dict[str, Path] = {
         "Documents": base_dir / "Documents",
         "Code": base_dir / "Code",
         "Images": base_dir / "Images",
@@ -60,5 +60,7 @@ def count_files_in_directory(directory: Path, recursive: bool = False) -> int:
         return 0
 
     if recursive:
-        return len(list(directory.rglob("*"))) - len(list(directory.glob("*")))
-    return len(list(directory.glob("*")))
+        return len(list(directory.rglob(pattern="*"))) - len(
+            list(directory.glob(pattern="*"))
+        )
+    return len(list(directory.glob(pattern="*")))

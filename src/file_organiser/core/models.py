@@ -3,7 +3,10 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple
+
+if TYPE_CHECKING:
+    from os import stat_result
 
 
 class MoveStatus(Enum):
@@ -125,7 +128,7 @@ class FileInfo:
     @classmethod
     def from_path(cls, path: Path) -> "FileInfo":
         """Creates a FileInfo instance from a file path."""
-        stat = path.stat()
+        stat: stat_result = path.stat()
         return cls(
             path=path,
             name=path.name,

@@ -1,8 +1,14 @@
 """Unit tests for organiser module."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from file_organiser.core.models import FileInfo
+
 from src.file_organiser.core.models import OrganiserResult
 from src.file_organiser.core.organiser import FileOrganiser
-
 from tests.fixtures.mock_plugins import MockReporterPlugin
 
 
@@ -12,7 +18,7 @@ class TestFileOrganiserInitialisation:
     def test_organiser_creation(self, tmp_unorganised_dir):
         """Test creating a FileOrganiser instance."""
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             include_hidden=False,
             validate_paths=False,
         )
@@ -24,7 +30,7 @@ class TestFileOrganiserInitialisation:
         """Test creating organiser with custom reporter."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
@@ -34,7 +40,7 @@ class TestFileOrganiserInitialisation:
     def test_organiser_with_validation(self, tmp_unorganised_dir):
         """Test creating organiser with path validation."""
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             validate_paths=True,
         )
 
@@ -45,7 +51,7 @@ class TestFileOrganiserInitialisation:
         (tmp_path / ".hidden").write_text("hidden")
 
         organiser = FileOrganiser(
-            tmp_path,
+            directory=tmp_path,
             include_hidden=True,
             validate_paths=False,
         )
@@ -60,12 +66,12 @@ class TestFileOrganisation:
         """Test dry run file organisation."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert isinstance(result, OrganiserResult)
         assert result.dry_run
@@ -75,12 +81,12 @@ class TestFileOrganisation:
         """Test file organisation with exclude patterns."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(
+        result: OrganiserResult = organiser.organise_files(
             dry_run=True,
             exclude_patterns=["*.txt"],
         )
@@ -89,17 +95,17 @@ class TestFileOrganisation:
 
     def test_organise_empty_directory(self, tmp_path):
         """Test organising an empty directory."""
-        empty_dir = tmp_path / "empty"
+        empty_dir: Path = tmp_path / "empty"
         empty_dir.mkdir()
 
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            empty_dir,
+            directory=empty_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert result.files_processed == 0
 
@@ -107,12 +113,12 @@ class TestFileOrganisation:
         """Test that organise_files returns proper result."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert hasattr(result, "files_processed")
         assert hasattr(result, "files_moved")
@@ -128,7 +134,7 @@ class TestReporterIntegration:
         """Test that reporter.on_start is called."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
@@ -142,7 +148,7 @@ class TestReporterIntegration:
         """Test that reporter.on_complete is called."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
@@ -156,7 +162,7 @@ class TestReporterIntegration:
         """Test that reporter.on_file_processing is called for each file."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
@@ -169,7 +175,7 @@ class TestReporterIntegration:
         """Test that reporter.on_file_processed is called for each file."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
@@ -186,12 +192,12 @@ class TestFileDiscovery:
     def test_discover_files_in_directory(self, tmp_unorganised_dir):
         """Test discovering files in directory."""
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             include_hidden=False,
             validate_paths=False,
         )
 
-        files = list(organiser._discover_files([]))
+        files: list[FileInfo] = list(organiser._discover_files(exclude_patterns=[]))
 
         assert len(files) > 0
 
@@ -201,13 +207,13 @@ class TestFileDiscovery:
         (tmp_path / ".hidden").write_text("hidden")
 
         organiser = FileOrganiser(
-            tmp_path,
+            directory=tmp_path,
             include_hidden=False,
             validate_paths=False,
         )
 
-        files = list(organiser._discover_files([]))
-        file_names = [f.name for f in files]
+        files: list[FileInfo] = list(organiser._discover_files(exclude_patterns=[]))
+        file_names: list[str] = [f.name for f in files]
 
         assert "visible.txt" in file_names
         assert ".hidden" not in file_names
@@ -218,13 +224,13 @@ class TestFileDiscovery:
         (tmp_path / ".hidden").write_text("hidden")
 
         organiser = FileOrganiser(
-            tmp_path,
+            directory=tmp_path,
             include_hidden=True,
             validate_paths=False,
         )
 
-        files = list(organiser._discover_files([]))
-        file_names = [f.name for f in files]
+        files: list[FileInfo] = list(organiser._discover_files(exclude_patterns=[]))
+        file_names: list[str] = [f.name for f in files]
 
         assert "visible.txt" in file_names
         assert ".hidden" in file_names
@@ -236,12 +242,14 @@ class TestFileDiscovery:
         (tmp_path / "readme.md").write_text("markdown")
 
         organiser = FileOrganiser(
-            tmp_path,
+            directory=tmp_path,
             validate_paths=False,
         )
 
-        files = list(organiser._discover_files(["*.txt"]))
-        file_names = [f.name for f in files]
+        files: list[FileInfo] = list(
+            organiser._discover_files(exclude_patterns=["*.txt"])
+        )
+        file_names: list[str] = [f.name for f in files]
 
         assert "file.txt" not in file_names
         assert "script.py" in file_names
@@ -255,12 +263,12 @@ class TestOrganisationResult:
         """Test that result contains expected statistics."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert result.files_processed > 0
         assert result.files_moved >= 0
@@ -271,12 +279,12 @@ class TestOrganisationResult:
         """Test that result includes operation duration."""
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_unorganised_dir,
+            directory=tmp_unorganised_dir,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert result.duration_seconds >= 0
 
@@ -287,11 +295,11 @@ class TestOrganisationResult:
 
         reporter = MockReporterPlugin()
         organiser = FileOrganiser(
-            tmp_path,
+            directory=tmp_path,
             reporter=reporter,
             validate_paths=False,
         )
 
-        result = organiser.organise_files(dry_run=True)
+        result: OrganiserResult = organiser.organise_files(dry_run=True)
 
         assert isinstance(result.errors, list)

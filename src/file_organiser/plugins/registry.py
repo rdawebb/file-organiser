@@ -1,7 +1,12 @@
 """Plugin registry for managing file organiser plugins."""
 
+from logging import Logger
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+
+if TYPE_CHECKING:
+    from _frozen_importlib import ModuleSpec
+    from types import ModuleType
 
 from src.file_organiser.utils.logging import get_logger
 
@@ -9,11 +14,12 @@ from .base import (
     CategorisationPlugin,
     FilterPlugin,
     Plugin,
+    PluginMetadata,
     PostProcessingPlugin,
     ReporterPlugin,
 )
 
-logger = get_logger(__name__)
+logger: Logger = get_logger(name=__name__)
 
 
 class PluginRegistry:
@@ -33,10 +39,12 @@ class PluginRegistry:
         Args:
             plugin (Plugin): The plugin instance to register.
         """
-        metadata = plugin.metadata
+        metadata: PluginMetadata = plugin.metadata
 
         if metadata.name in self._all_plugins:
-            logger.warning(f"Plugin '{metadata.name}' already registered - replacing.")
+            logger.warning(
+                msg=f"Plugin '{metadata.name}' already registered - replacing."
+            )
 
         if isinstance(plugin, CategorisationPlugin):
             self._categorisation_plugins.append(plugin)
@@ -54,7 +62,7 @@ class PluginRegistry:
             self._post_processing_plugins.append(plugin)
 
         self._all_plugins[metadata.name] = plugin
-        logger.info(f"Registered plugin: {metadata.name} (v{metadata.version})")
+        logger.info(msg=f"Registered plugin: {metadata.name} (v{metadata.version})")
 
     def unregister(self, plugin_name: str) -> None:
         """Unregisters a plugin by name.
@@ -63,27 +71,27 @@ class PluginRegistry:
             plugin_name (str): The name of the plugin to unregister.
         """
         if plugin_name not in self._all_plugins:
-            logger.warning(f"Plugin '{plugin_name}' not found in registry.")
+            logger.warning(msg=f"Plugin '{plugin_name}' not found in registry.")
             return
 
-        plugin = self._all_plugins[plugin_name]
+        plugin: Plugin = self._all_plugins[plugin_name]
 
-        self._categorisation_plugins = [
+        self._categorisation_plugins: list[CategorisationPlugin] = [
             p for p in self._categorisation_plugins if p.metadata.name != plugin_name
         ]
-        self._reporter_plugins = [
+        self._reporter_plugins: list[ReporterPlugin] = [
             p for p in self._reporter_plugins if p.metadata.name != plugin_name
         ]
-        self._filter_plugins = [
+        self._filter_plugins: list[FilterPlugin] = [
             p for p in self._filter_plugins if p.metadata.name != plugin_name
         ]
-        self._post_processing_plugins = [
+        self._post_processing_plugins: list[PostProcessingPlugin] = [
             p for p in self._post_processing_plugins if p.metadata.name != plugin_name
         ]
 
         plugin.cleanup()
         del self._all_plugins[plugin_name]
-        logger.info(f"Unregistered plugin: {plugin_name}")
+        logger.info(msg=f"Unregistered plugin: {plugin_name}")
 
     def get_categorisation_plugins(self) -> List[CategorisationPlugin]:
         """Returns the list of registered categorisation plugins.
@@ -115,7 +123,9 @@ class PluginRegistry:
         Returns:
             Optional[ReporterPlugin]: The default reporter plugin or None.
         """
-        enabled = [p for p in self._reporter_plugins if p.metadata.enabled]
+        enabled: list[ReporterPlugin] = [
+            p for p in self._reporter_plugins if p.metadata.enabled
+        ]
         return enabled[0] if enabled else None
 
     def get_plugin(self, plugin_name: str) -> Optional[Plugin]:
@@ -135,16 +145,16 @@ class PluginRegistry:
         Returns:
             Set[str]: Set of all category names.
         """
-        categories = set()
+        categories: set[str] = set()
         for plugin in self.get_categorisation_plugins():
-            get_cats = getattr(plugin, "get_categories", None)
+            get_cats: Any | None = getattr(plugin, "get_categories", None)
             if callable(get_cats):
                 categories.update(get_cats())
         categories.add("Unknown")
 
         return categories
 
-    def list_plugins(self) -> Dict[str, Dict]:
+    def list_plugins(self) -> dict[str, dict[str, Any]]:
         """Lists all registered plugins by name.
 
         Returns:
@@ -174,9 +184,9 @@ class PluginRegistry:
         )
         from src.file_organiser.plugins.builtin.reporters import RichReporterPlugin
 
-        registry = cls()
-        registry.register(ExtensionCategorisationPlugin(custom_extensions=None))
-        registry.register(RichReporterPlugin())
+        registry: PluginRegistry = cls()
+        registry.register(plugin=ExtensionCategorisationPlugin(custom_extensions=None))
+        registry.register(plugin=RichReporterPlugin())
         return registry
 
     def load_from_directory(self, plugins_dir: Path) -> None:
@@ -186,17 +196,17 @@ class PluginRegistry:
             plugins_dir (Path): The directory to load plugins from.
         """
         if not plugins_dir.exists():
-            logger.warning(f"Plugins directory '{plugins_dir}' does not exist.")
+            logger.warning(msg=f"Plugins directory '{plugins_dir}' does not exist.")
             return
 
-        for plugin_file in plugins_dir.glob("*.py"):
+        for plugin_file in plugins_dir.glob(pattern="*.py"):
             if plugin_file.name.startswith("_"):
                 continue
 
             try:
                 self._load_plugin_file(plugin_file)
             except Exception as e:
-                logger.error(f"Failed to load plugin from '{plugin_file}': {e}")
+                logger.error(msg=f"Failed to load plugin from '{plugin_file}': {e}")
 
     def _load_plugin_file(self, plugin_file: Path) -> None:
         """Loads a plugin from a single Python file.
@@ -207,20 +217,22 @@ class PluginRegistry:
         import importlib.util
         import sys
 
-        spec = importlib.util.spec_from_file_location(plugin_file.stem, plugin_file)
+        spec: ModuleSpec | None = importlib.util.spec_from_file_location(
+            name=plugin_file.stem, location=plugin_file
+        )
         if not spec or not spec.loader:
-            logger.error(f"Could not load spec for plugin '{plugin_file}'.")
+            logger.error(msg=f"Could not load spec for plugin '{plugin_file}'.")
             return
 
-        module = importlib.util.module_from_spec(spec)
+        module: ModuleType = importlib.util.module_from_spec(spec)
         sys.modules[plugin_file.stem] = module
         spec.loader.exec_module(module)
 
         for name in dir(module):
-            obj = getattr(module, name)
+            obj: Any = getattr(module, name)
             if isinstance(obj, type) and issubclass(obj, Plugin) and obj is not Plugin:
                 try:
-                    plugin = obj()
+                    plugin: Plugin = obj()
                     self.register(plugin)
                 except Exception as e:
-                    logger.error(f"Error instantiating plugin '{name}': {e}")
+                    logger.error(msg=f"Error instantiating plugin '{name}': {e}")

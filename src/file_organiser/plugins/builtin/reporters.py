@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -23,7 +23,7 @@ class RichReporterPlugin(ReporterPlugin):
         Args:
             verbose (bool, optional): Show detailed information.
         """
-        self.verbose = verbose
+        self.verbose: bool = verbose
         self.console = Console()
         self.progress: Optional[Progress] = None
         self.task_id: Optional[TaskID] = None
@@ -44,7 +44,7 @@ class RichReporterPlugin(ReporterPlugin):
             total_files (int): Total number of files to process.
         """
         self.console.print(
-            Panel("[bold blue]Starting file organisation...[/bold blue]")
+            Panel(renderable="[bold blue]Starting file organisation...[/bold blue]")
         )
 
         self.progress = Progress(
@@ -55,8 +55,8 @@ class RichReporterPlugin(ReporterPlugin):
         )
 
         self.progress.start()
-        self.task_id = self.progress.add_task(
-            "[cyan]Organising files...", total=total_files
+        self.task_id: TaskID = self.progress.add_task(
+            description="[cyan]Organising files...", total=total_files
         )
 
     def on_file_processing(self, file_info: FileInfo) -> None:
@@ -115,15 +115,15 @@ class RichReporterPlugin(ReporterPlugin):
         Args:
             result (OrganiserResult): The final organiser result.
         """
-        table = Table.grid(padding=(0, 2))
+        table: Table = Table.grid(padding=(0, 2))
         table.add_column(style="yellow", justify="right")
         table.add_column()
 
-        table.add_row("Files processed:", str(result.files_processed))
-        table.add_row("Files moved:", str(result.files_moved))
+        table.add_row("Files processed:", str(object=result.files_processed))
+        table.add_row("Files moved:", str(object=result.files_moved))
 
         if result.files_skipped > 0:
-            table.add_row("Files skipped:", str(result.files_skipped))
+            table.add_row("Files skipped:", str(object=result.files_skipped))
 
         if result.unknown_files > 0:
             table.add_row("Unknown file types:", f"[dim]{result.unknown_files}[/dim]")
@@ -133,22 +133,26 @@ class RichReporterPlugin(ReporterPlugin):
                 "Files failed:", f"[bold red]{result.files_failed}[/bold red]"
             )
 
-        table.add_row("Categories created:", str(len(result.categories_created)))
+        table.add_row("Categories created:", str(object=len(result.categories_created)))
         table.add_row("Duration:", f"{result.duration_seconds:.2f}s")
 
         if result.categories_created:
-            categories_list = "\n".join(
+            categories_list: str = "\n".join(
                 f" • {category}" for category in sorted(result.categories_created)
             )
             table.add_row("", "")
             table.add_row("Categories:", "")
             table.add_row("", categories_list)
 
-        title = "Dry Run Complete" if result.dry_run else "Success!"
-        colour = "yellow" if result.dry_run else "green"
+        title: Literal["Dry Run Complete", "Success!"] = (
+            "Dry Run Complete" if result.dry_run else "Success!"
+        )
+        colour: Literal["yellow", "green"] = "yellow" if result.dry_run else "green"
 
-        panel = Panel.fit(
-            table, title=f"[bold {colour}]{title}[/bold {colour}]", border_style=colour
+        panel: Panel = Panel.fit(
+            renderable=table,
+            title=f"[bold {colour}]{title}[/bold {colour}]",
+            border_style=colour,
         )
 
         self.console.print(panel)
@@ -191,7 +195,7 @@ class JSONReporterPlugin(ReporterPlugin):
             output_path (Optional[Path], optional): Path to output JSON file.
                 If None, outputs to stdout.
         """
-        self.output_path = output_path
+        self.output_path: Path | None = output_path
         self.start_time: Optional[float] = None
         self.console = Console()
 
@@ -212,7 +216,7 @@ class JSONReporterPlugin(ReporterPlugin):
         """
         import time
 
-        self.start_time = time.time()
+        self.start_time: int | float = time.time()
 
     def on_complete(self, result: OrganiserResult) -> None:
         """Outputs JSON summary.
@@ -220,7 +224,9 @@ class JSONReporterPlugin(ReporterPlugin):
         Args:
             result (OrganiserResult): The final organiser result.
         """
-        output = {
+        output: dict[
+            str, bool | dict[str, int | float] | list[str] | list[dict[str, str]]
+        ] = {
             "success": result.success,
             "statistics": {
                 "files_processed": result.files_processed,
@@ -232,15 +238,15 @@ class JSONReporterPlugin(ReporterPlugin):
             },
             "categories": sorted(result.categories_created),
             "errors": [
-                {"file": str(path), "error": str(error)}
+                {"file": str(object=path), "error": str(object=error)}
                 for path, error in result.errors
             ],
             "dry_run": result.dry_run,
         }
 
-        json_output = json.dumps(output, indent=4)
+        json_output: str = json.dumps(obj=output, indent=4)
 
         if self.output_path:
-            self.output_path.write_text(json_output)
+            self.output_path.write_text(data=json_output)
         else:
             self.console.print(json_output)

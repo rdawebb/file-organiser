@@ -12,7 +12,7 @@ class MagicNumberCategorisationPlugin(CategorisationPlugin):
 
     def __init__(self) -> None:
         """Initialises the magic number categorisation plugin."""
-        self._signatures = {
+        self._signatures: dict[bytes, str] = {
             b"\x89PNG\r\n\x1a\n": "images",
             b"\xff\xd8\xff": "images",  # JPEG
             b"GIF87a": "images",
@@ -54,8 +54,8 @@ class MagicNumberCategorisationPlugin(CategorisationPlugin):
             Optional[str]: The category name if categorised, else None.
         """
         try:
-            with open(file_info.path, "rb") as f:
-                file_header = f.read(16)
+            with open(file=file_info.path, mode="rb") as f:
+                file_header: bytes = f.read(16)
 
             for signature, category in self._signatures.items():
                 if file_header.startswith(signature):

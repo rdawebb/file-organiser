@@ -8,9 +8,11 @@ from src.file_organiser.core.models import FileInfo
 
 from ..base import CategorisationPlugin, PluginMetadata
 
-EXTENSIONS_PATH = Path(__file__).parent.parent.parent / "data" / "default_extensions.py"
-with open(EXTENSIONS_PATH, "r", encoding="utf-8") as f:
-    EXTENSIONS: dict[str, str] = ast.literal_eval(f.read())
+EXTENSIONS_PATH: Path = (
+    Path(__file__).parent.parent.parent / "data" / "default_extensions.py"
+)
+with open(file=EXTENSIONS_PATH, mode="r", encoding="utf-8") as f:
+    EXTENSIONS: dict[str, str] = ast.literal_eval(node_or_string=f.read())
 
 
 class ExtensionCategorisationPlugin(CategorisationPlugin):
@@ -23,11 +25,11 @@ class ExtensionCategorisationPlugin(CategorisationPlugin):
             custom_extensions (Optional[dict[str, str]]): A dictionary mapping file extensions
                 to category names. If None, uses the default EXTENSIONS mapping.
         """
-        self._extensions = EXTENSIONS.copy()
+        self._extensions: dict[str, str] = EXTENSIONS.copy()
         if custom_extensions:
             self._extensions.update(custom_extensions)
 
-        self._multi_part = [".tar.gz", ".tar.bz2", ".tar.xz"]
+        self._multi_part: list[str] = [".tar.gz", ".tar.bz2", ".tar.xz"]
 
     @property
     def metadata(self) -> PluginMetadata:
@@ -53,7 +55,7 @@ class ExtensionCategorisationPlugin(CategorisationPlugin):
         Returns:
             Optional[str]: The category name if categorised, else None.
         """
-        filename_lower = file_info.name.lower()
+        filename_lower: str = file_info.name.lower()
 
         for ext in self._multi_part:
             if filename_lower.endswith(ext):

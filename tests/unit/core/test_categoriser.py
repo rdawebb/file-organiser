@@ -5,7 +5,6 @@ from pathlib import Path
 from src.file_organiser.core.categoriser import FileCategoriser
 from src.file_organiser.core.models import FileInfo
 from src.file_organiser.plugins.registry import PluginRegistry
-
 from tests.fixtures.mock_plugins import MockCategorisationPlugin
 
 
@@ -41,19 +40,19 @@ class TestSingleCategorisation:
 
     def test_categorise_matching_file(self, file_categoriser, sample_text_file_info):
         """Test categorising a file that matches plugin category."""
-        category = file_categoriser.categorise(sample_text_file_info)
+        category: str = file_categoriser.categorise(sample_text_file_info)
 
         assert category == "Documents"
 
     def test_categorise_code_file(self, file_categoriser, sample_code_file_info):
         """Test categorising a code file."""
-        category = file_categoriser.categorise(sample_code_file_info)
+        category: str = file_categoriser.categorise(sample_code_file_info)
 
         assert category == "Code"
 
     def test_categorise_image_file(self, file_categoriser, sample_image_file_info):
         """Test categorising an image file."""
-        category = file_categoriser.categorise(sample_image_file_info)
+        category: str = file_categoriser.categorise(sample_image_file_info)
 
         assert category == "Images"
 
@@ -67,7 +66,7 @@ class TestSingleCategorisation:
             modified_time=0,
         )
 
-        category = categoriser_with_fallback.categorise(file_info)
+        category: str = categoriser_with_fallback.categorise(file_info)
 
         assert category == "Other"
 
@@ -81,7 +80,7 @@ class TestSingleCategorisation:
             modified_time=0,
         )
 
-        category = file_categoriser.categorise(file_info)
+        category: str = file_categoriser.categorise(file_info)
 
         assert category == "Uncategorised"
 
@@ -91,7 +90,7 @@ class TestBatchCategorisation:
 
     def test_categorise_batch(self, file_categoriser, various_file_infos):
         """Test categorising multiple files at once."""
-        results = file_categoriser.categorise_batch(various_file_infos)
+        results: dict[Path, str] = file_categoriser.categorise_batch(various_file_infos)
 
         assert len(results) == len(various_file_infos)
         assert results[Path("doc.txt")] == "Documents"
@@ -100,7 +99,7 @@ class TestBatchCategorisation:
 
     def test_categorise_empty_batch(self, file_categoriser):
         """Test categorising an empty list."""
-        results = file_categoriser.categorise_batch([])
+        results: dict[Path, str] = file_categoriser.categorise_batch([])
 
         assert results == {}
 
@@ -108,7 +107,9 @@ class TestBatchCategorisation:
         self, categoriser_with_fallback, various_file_infos
     ):
         """Test batch categorisation with fallback."""
-        results = categoriser_with_fallback.categorise_batch(various_file_infos)
+        results: dict[Path, str] = categoriser_with_fallback.categorise_batch(
+            various_file_infos
+        )
 
         assert len(results) == len(various_file_infos)
         # All should use fallback
@@ -121,7 +122,7 @@ class TestCategoryDiscovery:
 
     def test_get_all_categories(self, file_categoriser):
         """Test retrieving all available categories."""
-        categories = file_categoriser.get_all_categories()
+        categories: list[str] = file_categoriser.get_all_categories()
 
         assert "Uncategorised" in categories
         assert "Documents" in categories
@@ -130,14 +131,16 @@ class TestCategoryDiscovery:
 
     def test_get_all_categories_with_fallback_only(self, categoriser_with_fallback):
         """Test getting categories when only fallback exists."""
-        categories = categoriser_with_fallback.get_all_categories()
+        categories: list[str] = categoriser_with_fallback.get_all_categories()
 
         assert "Other" in categories
         assert len(categories) == 1
 
     def test_get_category_info(self, file_categoriser):
         """Test retrieving category information."""
-        info = file_categoriser.get_category_info("Documents")
+        info: dict[str, str | list[str]] = file_categoriser.get_category_info(
+            "Documents"
+        )
 
         assert info["name"] == "Documents"
         assert isinstance(info["provided_by"], list)
@@ -149,8 +152,8 @@ class TestPluginCaching:
     def test_plugin_cache_validity(self, file_categoriser):
         """Test that plugin cache is used."""
         # Second call should use cache
-        plugins1 = file_categoriser._get_plugins()
-        plugins2 = file_categoriser._get_plugins()
+        plugins1: list[MockCategorisationPlugin] = file_categoriser._get_plugins()
+        plugins2: list[MockCategorisationPlugin] = file_categoriser._get_plugins()
 
         assert plugins1 is plugins2
 
@@ -164,7 +167,7 @@ class TestPluginCaching:
         assert not file_categoriser._cache_valid
 
         # Next call should rebuild
-        plugins = file_categoriser._get_plugins()
+        plugins: list[MockCategorisationPlugin] = file_categoriser._get_plugins()
         assert file_categoriser._cache_valid
         assert plugins is not None
 
@@ -180,7 +183,7 @@ class TestErrorHandling:
             priority=100,  # Higher priority so it runs first
         )
         registry = PluginRegistry()
-        registry.register(failing_plugin)
+        registry.register(plugin=failing_plugin)
 
         categoriser = FileCategoriser(plugin_registry=registry)
 
@@ -193,7 +196,7 @@ class TestErrorHandling:
         )
 
         # Should fall back when plugin fails
-        category = categoriser.categorise(file_info)
+        category: str = categoriser.categorise(file_info)
         assert category == "Uncategorised"
 
     def test_multiple_plugin_fallthrough(self, mock_plugin_registry):
@@ -210,8 +213,8 @@ class TestErrorHandling:
         )
 
         registry = PluginRegistry()
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
         categoriser = FileCategoriser(plugin_registry=registry)
 
@@ -224,7 +227,7 @@ class TestErrorHandling:
             modified_time=0,
         )
 
-        category = categoriser.categorise(file_info)
+        category: str = categoriser.categorise(file_info)
         assert category == "Uncategorised"
 
 
@@ -258,7 +261,7 @@ class TestPluginPriority:
         )
 
         # High priority plugin should categorise first
-        category = categoriser.categorise(file_info)
+        category: str = categoriser.categorise(file_info)
         assert category == "TextFiles"
 
 
@@ -267,6 +270,6 @@ class TestCategoriserStatistics:
 
     def test_get_statistics(self, file_categoriser):
         """Test retrieving categoriser statistics."""
-        stats = file_categoriser.get_statistics()
+        stats: dict[str, int] = file_categoriser.get_statistics()
 
         assert isinstance(stats, dict)

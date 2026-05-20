@@ -1,7 +1,8 @@
 """File categorisation logic using plugins."""
 
+from logging import Logger
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from src.file_organiser.plugins.base import CategorisationPlugin
 from src.file_organiser.plugins.registry import PluginRegistry
@@ -9,7 +10,7 @@ from src.file_organiser.utils.logging import get_logger
 
 from .models import FileInfo
 
-logger = get_logger(__name__)
+logger: Logger = get_logger(name=__name__)
 
 
 class FileCategoriser:
@@ -26,10 +27,12 @@ class FileCategoriser:
             plugin_registry: The registry of categorisation plugins (defaults to None)
             fallback_category: The category to assign if no plugins match (defaults to "Uncategorised").
         """
-        self.plugin_registry = plugin_registry or PluginRegistry.create_default()
-        self.fallback_category = fallback_category
+        self.plugin_registry: PluginRegistry = (
+            plugin_registry or PluginRegistry.create_default()
+        )
+        self.fallback_category: str = fallback_category
         self._plugin_cache: List[CategorisationPlugin] = []
-        self._cache_valid = False
+        self._cache_valid: bool = False
 
     def categorise(self, file_info: FileInfo) -> str:
         """Categorises a file based on the registered plugins.
@@ -40,7 +43,7 @@ class FileCategoriser:
         Returns:
             str: The determined category for the file.
         """
-        plugins = self._get_plugins()
+        plugins: list[CategorisationPlugin] = self._get_plugins()
 
         for plugin in plugins:
             try:
@@ -48,22 +51,22 @@ class FileCategoriser:
                     if not plugin.can_categorise(file_info):
                         continue
 
-                category = plugin.categorise(file_info)
+                category: str | None = plugin.categorise(file_info)
 
                 if category:
                     logger.debug(
-                        f"File '{file_info.name}' categorised as '{category}' by plugin '{plugin.metadata.name}'"
+                        msg=f"File '{file_info.name}' categorised as '{category}' by plugin '{plugin.metadata.name}'"
                     )
                     return category
 
             except Exception as e:
                 logger.error(
-                    f"Plugin '{plugin.metadata.name}' failed to categorise file '{file_info.name}': {e}"
+                    msg=f"Plugin '{plugin.metadata.name}' failed to categorise file '{file_info.name}': {e}"
                 )
                 continue
 
         logger.debug(
-            f"File '{file_info.name}' could not be categorised by any plugin, using fallback category '{self.fallback_category}'"
+            msg=f"File '{file_info.name}' could not be categorised by any plugin, using fallback category '{self.fallback_category}'"
         )
         return self.fallback_category
 
@@ -76,10 +79,10 @@ class FileCategoriser:
         Returns:
             dict[Path, str]: Dictionary mapping file paths to their determined categories.
         """
-        results = {}
+        results: dict[Path, str] = {}
         for file_info in file_infos:
-            category = self.categorise(file_info)
-            results[file_info.path] = category
+            category: str = self.categorise(file_info)
+            results[file_info.path]: str = category
         return results
 
     def get_all_categories(self) -> set[str]:
@@ -88,17 +91,17 @@ class FileCategoriser:
         Returns:
             set[str]: Set of all category names.
         """
-        categories = {self.fallback_category}
+        categories: set[str] = {self.fallback_category}
 
         for plugin in self._get_plugins():
             if hasattr(plugin, "get_categories"):
                 try:
-                    get_cats = getattr(plugin, "get_categories", None)
+                    get_cats: Any | None = getattr(plugin, "get_categories", None)
                     if callable(get_cats):
                         categories.update(get_cats())
                 except Exception as e:
                     logger.error(
-                        f"Plugin '{plugin.metadata.name}' failed to get categories: {e}"
+                        msg=f"Plugin '{plugin.metadata.name}' failed to get categories: {e}"
                     )
                     continue
 
@@ -113,15 +116,19 @@ class FileCategoriser:
         Returns:
             dict: Information about the category, including which plugins provide it.
         """
-        info = {"name": category, "provided_by": [], "description": None}
+        info: dict[str, str | list | None] = {
+            "name": category,
+            "provided_by": [],
+            "description": None,
+        }
 
         for plugin in self._get_plugins():
             try:
-                get_cats = getattr(plugin, "get_categories", None)
+                get_cats: Any | None = getattr(plugin, "get_categories", None)
                 if callable(get_cats):
-                    provided_by = info["provided_by"]
+                    provided_by: list[str] = info["provided_by"]
                     if not isinstance(provided_by, list) or provided_by is None:
-                        provided_by = []
+                        provided_by: list[str] = []
                     provided_by.append(plugin.metadata.name)
             except Exception:
                 pass
@@ -135,7 +142,9 @@ class FileCategoriser:
             List[CategorisationPlugin]: List of categorisation plugins.
         """
         if not self._cache_valid:
-            self._plugin_cache = self.plugin_registry.get_categorisation_plugins()
+            self._plugin_cache: list[CategorisationPlugin] = (
+                self.plugin_registry.get_categorisation_plugins()
+            )
             self._cache_valid = True
 
         return self._plugin_cache
@@ -143,7 +152,7 @@ class FileCategoriser:
     def _invalidate_cache(self) -> None:
         """Invalidates the plugin cache."""
         self._cache_valid = False
-        logger.debug("Categorisation plugin cache invalidated.")
+        logger.debug(msg="Categorisation plugin cache invalidated.")
 
     def get_statistics(self) -> dict:
         """Retrieves statistics about the categorisation plugins.
@@ -151,7 +160,7 @@ class FileCategoriser:
         Returns:
             dict: Statistics including number of plugins and categories.
         """
-        plugins = self._get_plugins()
+        plugins: list[CategorisationPlugin] = self._get_plugins()
 
         return {
             "total_plugins": len(plugins),
@@ -257,29 +266,86 @@ def get_category_metadata(category: str) -> dict:
     return _resolver.get_metadata(category)
 
 
-register_category_metadata("archives", "Archives", "Compressed archive files", "📦")
-register_category_metadata("audio", "Audio", "Audio files", "🎵")
-register_category_metadata("code", "Code", "Source code files", "💻")
+# Register category metadata
+
 register_category_metadata(
-    "data_files", "Data Files", "Data files such as CSV, JSON, XML", "📊"
+    name="archives",
+    display_name="Archives",
+    description="Compressed archive files",
+    icon="📦",
 )
 register_category_metadata(
-    "design_files", "Design Files", "Design and graphics files", "🎨"
+    name="audio", display_name="Audio", description="Audio files", icon="🎵"
 )
-register_category_metadata("disks_images", "Disk Images", "Disk image files", "💿")
-register_category_metadata("documents", "Documents", "Document files", "📄")
-register_category_metadata("ebooks", "eBooks", "Electronic book files", "📚")
-register_category_metadata("fonts", "Fonts", "Font files", "🔤")
-register_category_metadata("images", "Images", "Image files", "🖼️")
-register_category_metadata("installers", "Installers", "Software installer files", "🛠️")
-register_category_metadata("misc", "Miscellaneous", "Miscellaneous files", "🗂️")
 register_category_metadata(
-    "raw_images", "Raw Images", "Raw image files from cameras", "📷"
+    name="code", display_name="Code", description="Source code files", icon="💻"
 )
-register_category_metadata("text", "Text Files", "Plain text files", "📝")
-register_category_metadata("videos", "Videos", "Video files", "🎬")
-register_category_metadata("web", "Web Files", "Web-related files", "🌐")
-register_category_metadata("3d_files", "3D Files", "3D model and design files", "🧱")
 register_category_metadata(
-    "Uncategorised", "Uncategorised", "Files that could not be categorised", "❓"
+    name="data_files",
+    display_name="Data Files",
+    description="Data files such as CSV, JSON, XML",
+    icon="📊",
+)
+register_category_metadata(
+    name="design_files",
+    display_name="Design Files",
+    description="Design and graphics files",
+    icon="🎨",
+)
+register_category_metadata(
+    name="disks_images",
+    display_name="Disk Images",
+    description="Disk image files",
+    icon="💿",
+)
+register_category_metadata(
+    name="documents", display_name="Documents", description="Document files", icon="📄"
+)
+register_category_metadata(
+    name="ebooks", display_name="eBooks", description="Electronic book files", icon="📚"
+)
+register_category_metadata(
+    name="fonts", display_name="Fonts", description="Font files", icon="🔤"
+)
+register_category_metadata(
+    name="images", display_name="Images", description="Image files", icon="🖼️"
+)
+register_category_metadata(
+    name="installers",
+    display_name="Installers",
+    description="Software installer files",
+    icon="🛠️",
+)
+register_category_metadata(
+    name="misc",
+    display_name="Miscellaneous",
+    description="Miscellaneous files",
+    icon="🗂️",
+)
+register_category_metadata(
+    name="raw_images",
+    display_name="Raw Images",
+    description="Raw image files from cameras",
+    icon="📷",
+)
+register_category_metadata(
+    name="text", display_name="Text Files", description="Plain text files", icon="📝"
+)
+register_category_metadata(
+    name="videos", display_name="Videos", description="Video files", icon="🎬"
+)
+register_category_metadata(
+    name="web", display_name="Web Files", description="Web-related files", icon="🌐"
+)
+register_category_metadata(
+    name="3d_files",
+    display_name="3D Files",
+    description="3D model and design files",
+    icon="🧱",
+)
+register_category_metadata(
+    name="Uncategorised",
+    display_name="Uncategorised",
+    description="Files that could not be categorised",
+    icon="❓",
 )

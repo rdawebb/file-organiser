@@ -1,12 +1,22 @@
 """Unit tests for plugin registry."""
 
-from src.file_organiser.plugins.registry import PluginRegistry
+from typing import TYPE_CHECKING, Any
 
+if TYPE_CHECKING:
+    from file_organiser.plugins.base import (
+        CategorisationPlugin,
+        FilterPlugin,
+        Plugin,
+        PostProcessingPlugin,
+        ReporterPlugin,
+    )
+
+from src.file_organiser.plugins.registry import PluginRegistry
 from tests.fixtures.mock_plugins import (
     MockCategorisationPlugin,
-    MockReporterPlugin,
     MockFilterPlugin,
     MockPostProcessingPlugin,
+    MockReporterPlugin,
 )
 
 
@@ -25,7 +35,7 @@ class TestPluginRegistryInitialisation:
 
     def test_default_registry(self):
         """Test creating default registry."""
-        registry = PluginRegistry.create_default()
+        registry: PluginRegistry = PluginRegistry.create_default()
 
         assert registry is not None
 
@@ -80,9 +90,9 @@ class TestPluginRegistration:
         rep_plugin = MockReporterPlugin(name="rep")
         flt_plugin = MockFilterPlugin(name="flt")
 
-        registry.register(cat_plugin)
-        registry.register(rep_plugin)
-        registry.register(flt_plugin)
+        registry.register(plugin=cat_plugin)
+        registry.register(plugin=rep_plugin)
+        registry.register(plugin=flt_plugin)
 
         assert len(registry._all_plugins) == 3
 
@@ -92,8 +102,8 @@ class TestPluginRegistration:
         plugin1 = MockCategorisationPlugin(name="same")
         plugin2 = MockReporterPlugin(name="same")
 
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
         # Second registration should replace first
         assert registry._all_plugins["same"] == plugin2
@@ -119,11 +129,11 @@ class TestPluginPriority:
             priority=50,
         )
 
-        registry.register(low_priority)
-        registry.register(high_priority)
-        registry.register(medium_priority)
+        registry.register(plugin=low_priority)
+        registry.register(plugin=high_priority)
+        registry.register(plugin=medium_priority)
 
-        plugins = registry.get_categorisation_plugins()
+        plugins: list[CategorisationPlugin] = registry.get_categorisation_plugins()
 
         # Should be sorted by priority (highest first)
         assert len(plugins) == 3
@@ -138,10 +148,10 @@ class TestPluginRetrieval:
         plugin1 = MockCategorisationPlugin(name="cat1")
         plugin2 = MockCategorisationPlugin(name="cat2")
 
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
-        plugins = registry.get_categorisation_plugins()
+        plugins: list[CategorisationPlugin] = registry.get_categorisation_plugins()
 
         assert len(plugins) == 2
         assert plugin1 in plugins
@@ -153,10 +163,10 @@ class TestPluginRetrieval:
         plugin1 = MockPostProcessingPlugin(name="post1")
         plugin2 = MockPostProcessingPlugin(name="post2")
 
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
-        plugins = registry.get_postprocess_plugins()
+        plugins: list[PostProcessingPlugin] = registry.get_postprocess_plugins()
 
         assert len(plugins) == 2
         assert plugin1 in plugins
@@ -168,10 +178,10 @@ class TestPluginRetrieval:
         plugin1 = MockFilterPlugin(name="flt1")
         plugin2 = MockFilterPlugin(name="flt2")
 
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
-        plugins = registry.get_filter_plugins()
+        plugins: list[FilterPlugin] = registry.get_filter_plugins()
 
         assert len(plugins) == 2
         assert plugin1 in plugins
@@ -183,10 +193,10 @@ class TestPluginRetrieval:
         plugin1 = MockPostProcessingPlugin(name="post1")
         plugin2 = MockPostProcessingPlugin(name="post2")
 
-        registry.register(plugin1)
-        registry.register(plugin2)
+        registry.register(plugin=plugin1)
+        registry.register(plugin=plugin2)
 
-        plugins = registry.get_postprocess_plugins()
+        plugins: list[PostProcessingPlugin] = registry.get_postprocess_plugins()
 
         assert len(plugins) == 2
         assert plugin1 in plugins
@@ -198,10 +208,10 @@ class TestPluginRetrieval:
         cat_plugin = MockCategorisationPlugin(name="cat")
         rep_plugin = MockReporterPlugin(name="rep")
 
-        registry.register(cat_plugin)
-        registry.register(rep_plugin)
+        registry.register(plugin=cat_plugin)
+        registry.register(plugin=rep_plugin)
 
-        plugins = registry.list_plugins()
+        plugins: dict[str, dict[str, Any]] = registry.list_plugins()
 
         assert len(plugins) == 2
         assert "cat" in plugins
@@ -214,7 +224,7 @@ class TestPluginRetrieval:
 
         registry.register(plugin)
 
-        retrieved = registry.get_plugin("my_plugin")
+        retrieved: Plugin | None = registry.get_plugin(plugin_name="my_plugin")
 
         assert retrieved == plugin
 
@@ -222,7 +232,7 @@ class TestPluginRetrieval:
         """Test retrieving a plugin that doesn't exist."""
         registry = PluginRegistry()
 
-        plugin = registry.get_plugin("nonexistent")
+        plugin: Plugin | None = registry.get_plugin(plugin_name="nonexistent")
 
         assert plugin is None
 
@@ -238,7 +248,7 @@ class TestPluginUnregistration:
         registry.register(plugin)
         assert "test" in registry._all_plugins
 
-        registry.unregister("test")
+        registry.unregister(plugin_name="test")
 
         assert "test" not in registry._all_plugins
         assert len(registry._categorisation_plugins) == 0
@@ -248,7 +258,7 @@ class TestPluginUnregistration:
         registry = PluginRegistry()
 
         # Should not raise
-        registry.unregister("nonexistent")
+        registry.unregister(plugin_name="nonexistent")
 
     def test_unregister_calls_cleanup(self):
         """Test that unregister calls plugin cleanup."""
@@ -256,7 +266,7 @@ class TestPluginUnregistration:
         plugin = MockCategorisationPlugin(name="test")
 
         registry.register(plugin)
-        registry.unregister("test")
+        registry.unregister(plugin_name="test")
 
         # Plugin cleanup should have been called
 
@@ -271,9 +281,9 @@ class TestPluginEnableDisable:
             name="enabled",
         )
 
-        registry.register(enabled_plugin)
+        registry.register(plugin=enabled_plugin)
 
-        plugins = registry.get_categorisation_plugins()
+        plugins: list[CategorisationPlugin] = registry.get_categorisation_plugins()
 
         assert enabled_plugin in plugins
 
@@ -287,7 +297,7 @@ class TestPluginEnableDisable:
         # Disable the plugin
         plugin.metadata.enabled = False
 
-        plugins = registry.get_categorisation_plugins()
+        plugins: list[CategorisationPlugin] = registry.get_categorisation_plugins()
 
         assert plugin not in plugins
 
@@ -297,8 +307,8 @@ class TestDefaultReporter:
 
     def test_get_default_reporter(self):
         """Test retrieving default reporter."""
-        registry = PluginRegistry.create_default()
+        registry: PluginRegistry = PluginRegistry.create_default()
 
-        reporter = registry.get_default_reporter()
+        reporter: ReporterPlugin | None = registry.get_default_reporter()
 
         assert reporter is not None

@@ -4,7 +4,7 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
+from typing import Any, Literal, Optional, TextIO
 
 from file_mover import file_mover
 
@@ -12,7 +12,7 @@ from file_mover import file_mover
 class ColouredFormatter(logging.Formatter):
     """Custom logging formatter with colour support."""
 
-    COLOURS = {
+    COLOURS: dict[str, str] = {
         "DEBUG": "\033[36m",  # Cyan
         "INFO": "\033[32m",  # Green
         "WARNING": "\033[33m",  # Yellow
@@ -45,42 +45,44 @@ def setup_logging(
         coloured (bool, optional): If True, uses coloured output for console logs. Defaults to True.
     """
     if verbose:
-        level = logging.DEBUG
+        level: Literal[10] = logging.DEBUG
     else:
-        level = getattr(logging, log_level.upper(), logging.INFO)
+        level: Any | Literal[20] = getattr(logging, log_level.upper(), logging.INFO)
 
-    handlers = []
+    handlers: list[logging.Handler] = []
 
-    rust_handler = logging.StreamHandler()
+    rust_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
     rust_handler.setLevel(level)
 
-    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler: logging.StreamHandler[TextIO | Any] = logging.StreamHandler(
+        stream=sys.stderr
+    )
     console_handler.setLevel(level)
 
     if coloured and sys.stderr.isatty():
-        console_formatter = ColouredFormatter("[PYTHON] %(levelname)s: %(message)s")
-        rust_formatter = ColouredFormatter("[RUST] %(levelname)s: %(message)s")
+        console_formatter = ColouredFormatter(fmt="[PYTHON] %(levelname)s: %(message)s")
+        rust_formatter = ColouredFormatter(fmt="[RUST] %(levelname)s: %(message)s")
     else:
-        console_formatter = logging.Formatter("[PYTHON] %(levelname)s: %(message)s")
-        rust_formatter = logging.Formatter("[RUST] %(levelname)s: %(message)s")
+        console_formatter = logging.Formatter(fmt="[PYTHON] %(levelname)s: %(message)s")
+        rust_formatter = logging.Formatter(fmt="[RUST] %(levelname)s: %(message)s")
 
-    rust_handler.setFormatter(rust_formatter)
+    rust_handler.setFormatter(fmt=rust_formatter)
     handlers.append(rust_handler)
 
-    console_handler.setFormatter(console_formatter)
+    console_handler.setFormatter(fmt=console_formatter)
     handlers.append(console_handler)
 
     if log_file:
         file_handler = RotatingFileHandler(
-            log_file, maxBytes=1 * 1024 * 1024, backupCount=5
+            filename=log_file, maxBytes=1 * 1024 * 1024, backupCount=5
         )
-        file_handler.setLevel(logging.DEBUG)
+        file_handler.setLevel(level=logging.DEBUG)
         file_formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
 
-        file_handler.setFormatter(file_formatter)
+        file_handler.setFormatter(fmt=file_formatter)
         handlers.append(file_handler)
 
     logging.basicConfig(
@@ -90,8 +92,8 @@ def setup_logging(
 
     file_mover.init_logging()
 
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger(name="urllib3").setLevel(level=logging.WARNING)
+    logging.getLogger(name="requests").setLevel(level=logging.WARNING)
 
 
 class OperationLogger:
@@ -106,32 +108,35 @@ class OperationLogger:
             operation_name (str): The name of the operation.
             logger (Optional[logging.Logger], optional): Logger instance to use. Defaults to root logger.
         """
-        self.operation_name = operation_name
-        self.logger = logger or logging.getLogger(__name__)
-        self.start_time = None
+        self.operation_name: str = operation_name
+        self.logger: logging.Logger = logger or logging.getLogger(name=__name__)
+        self.start_time: float = -1.0
 
     def __enter__(self):
         """Logs the start of the operation."""
         import time
 
-        self.start_time = time.time()
-        self.logger.info(f"Starting: {self.operation_name}")
+        self.start_time: float = time.time()
+        self.logger.info(msg=f"Starting: {self.operation_name}")
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         """Logs the end of the operation."""
         import time
 
-        if self.start_time is not None:
-            duration = time.time() - float(self.start_time)
+        if self.start_time != -1.0:
+            duration: float = time.time() - self.start_time
         else:
             duration = 0.0
+            self.logger.warning(
+                msg=f"Operation '{self.operation_name}' ended without a valid start time."
+            )
 
         if exc_type is None:
-            self.logger.info(f"Completed: {self.operation_name} in {duration:.2f}s")
+            self.logger.info(msg=f"Completed: {self.operation_name} in {duration:.2f}s")
         else:
             self.logger.error(
-                f"Failed: {self.operation_name} after {duration:.2f}s - {exc_value}"
+                msg=f"Failed: {self.operation_name} after {duration:.2f}s - {exc_value}"
             )
 
         return False  # Do not suppress exceptions
