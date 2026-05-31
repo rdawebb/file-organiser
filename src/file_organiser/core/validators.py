@@ -82,22 +82,22 @@ class PathValidator:
             ValueError: If the directory is forbidden or contains forbidden paths.
         """
         for forbidden in cls.FORBIDDEN_PATHS:
+            if directory == forbidden:
+                raise ValueError(
+                    f"Organising system directories is not allowed: {directory}"
+                )
+
             try:
-                if directory == forbidden:
-                    raise ValueError(
-                        f"Organising system directories is not allowed: {directory}"
-                    )
+                is_parent_of_forbidden = forbidden.is_relative_to(directory)
+            except AttributeError:  # Python < 3.9 fallback
+                is_parent_of_forbidden = str(forbidden).startswith(
+                    str(directory) + os.sep
+                )
 
-                if forbidden.is_relative_to(directory):
-                    raise ValueError(
-                        f"Directory contains system path {forbidden}: {directory}"
-                    )
-
-            except (ValueError, AttributeError):
-                if str(object=forbidden).startswith(str(object=directory) + os.sep):
-                    raise ValueError(
-                        f"Directory contains system path {forbidden}: {directory}"
-                    )
+            if is_parent_of_forbidden:
+                raise ValueError(
+                    f"Directory contains system path {forbidden}: {directory}"
+                )
 
     @classmethod
     def validate_category_name(cls, category: str) -> None:

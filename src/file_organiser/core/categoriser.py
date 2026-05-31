@@ -82,7 +82,7 @@ class FileCategoriser:
         results: dict[Path, str] = {}
         for file_info in file_infos:
             category: str = self.categorise(file_info)
-            results[file_info.path]: str = category
+            results[file_info.path] = category
         return results
 
     def get_all_categories(self) -> set[str]:

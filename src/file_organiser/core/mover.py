@@ -117,7 +117,7 @@ class FileMover:
         destination: Path,
         category: Optional[str] = None,
         dry_run: bool = False,
-    ) -> MoveResult:
+    ) -> list[MoveResult]:
         """Moves multiple files from sources to destination.
 
         Args:
@@ -129,19 +129,19 @@ class FileMover:
         Returns:
             MoveResult: The result of the move operation.
         """
-        result: MoveResult = self.mover.move_files_batch(
-            [str(object=source) for source in sources],
-            str(object=destination),
+        raw_results = self.mover.move_files_batch(
+            [str(s) for s in sources],
+            str(destination),
             category=category,
             dry_run=dry_run,
         )
 
-        py_result: MoveResult = _result_to_move_result(result)
+        py_results: list[MoveResult] = [_result_to_move_result(r) for r in raw_results]
 
-        if py_result.failed:
-            raise IOError(py_result.error)
+        if any(r.failed for r in py_results):
+            raise IOError(py_results[0].error)
 
-        return py_result
+        return py_results
 
     def clear_cache(self) -> None:
         """Clears the file mover's cache."""

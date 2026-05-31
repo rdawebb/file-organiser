@@ -34,16 +34,19 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "prek>=0.4.1,<1.0.0",
+    "prek>=0.4.3,<1.0.0",
     "pytest>=9.0.3,<10.0.0",
     "pytest-benchmark>=5.0.0,<6.0.0",
     "pytest-cov>=7.1.0,<8.0.0",
     "pytest-mock>=3.14.0,<4.0.0",
     "pytest-timeout>=2.4.0,<3.0.0",
-    "ruff>=0.15.13,<1.0.0",
+    "ruff>=0.15.15,<1.0.0",
     "rust-just>=1.51.0,<2.0.0",
-    "ty>=0.0.38,<1.0.0"
+    "ty>=0.0.40,<1.0.0"
 ]
+
+[project.scripts]
+org = "src.file_organiser.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/rdawebb/file-organiser"

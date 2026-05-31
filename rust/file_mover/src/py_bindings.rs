@@ -1,5 +1,5 @@
+use pyo3::exceptions::{PyFileNotFoundError, PyIOError, PyPermissionError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::exceptions::{PyIOError, PyPermissionError, PyFileNotFoundError, PyValueError};
 use std::path::PathBuf;
 
 use crate::models::{MoveError, MoveResult as RustMoveResult, MoveStatus as RustMoveStatus};
@@ -17,10 +17,10 @@ pub struct PyMoveStatus {
 impl PyMoveStatus {
     #[classattr]
     const SUCCESS: &'static str = "SUCCESS";
-    
+
     #[classattr]
     const FAILED: &'static str = "FAILED";
-    
+
     #[classattr]
     const DRY_RUN: &'static str = "DRY_RUN";
 
@@ -55,16 +55,16 @@ impl From<RustMoveStatus> for PyMoveStatus {
 pub struct PyMoveResult {
     #[pyo3(get)]
     pub status: PyMoveStatus,
-    
+
     #[pyo3(get)]
     pub source: String,
-    
+
     #[pyo3(get)]
     pub destination: Option<String>,
-    
+
     #[pyo3(get)]
     pub category: Option<String>,
-    
+
     #[pyo3(get)]
     pub error: Option<String>,
 }
@@ -97,7 +97,7 @@ impl PyMoveResult {
 impl From<RustMoveResult> for PyMoveResult {
     fn from(result: RustMoveResult) -> Self {
         let error_msg = result.error.as_ref().map(|e| format!("{}", e));
-        
+
         PyMoveResult {
             status: result.status.into(),
             source: result.source.to_string_lossy().to_string(),
@@ -111,10 +111,7 @@ impl From<RustMoveResult> for PyMoveResult {
 fn move_error_to_py_err(error: MoveError) -> PyErr {
     match error {
         MoveError::SourceNotFound(path) => {
-            PyFileNotFoundError::new_err(format!(
-                "Source file does not exist: {}",
-                path.display()
-            ))
+            PyFileNotFoundError::new_err(format!("Source file does not exist: {}", path.display()))
         }
         MoveError::NotAFile(path) => {
             PyValueError::new_err(format!("Source path is not a file: {}", path.display()))
@@ -125,12 +122,10 @@ fn move_error_to_py_err(error: MoveError) -> PyErr {
         MoveError::IntegrityCheckFailed => {
             PyIOError::new_err("File integrity check failed after move")
         }
-        MoveError::UniqueFilenameExhausted(attempts) => {
-            PyValueError::new_err(format!(
-                "Unable to generate unique filename after {} attempts",
-                attempts
-            ))
-        }
+        MoveError::UniqueFilenameExhausted(attempts) => PyValueError::new_err(format!(
+            "Unable to generate unique filename after {} attempts",
+            attempts
+        )),
         MoveError::Io(e) => PyIOError::new_err(format!("IO error: {}", e)),
         MoveError::Other(msg) => PyIOError::new_err(format!("Unexpected error: {}", msg)),
     }
@@ -269,6 +264,10 @@ impl PyFileMover {
             category,
             dry_run,
         );
+
+        if let Some(error) = result.error {
+            return Err(move_error_to_py_err(error));
+        }
 
         Ok(result.into())
     }
