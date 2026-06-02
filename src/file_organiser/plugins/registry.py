@@ -41,9 +41,7 @@ class PluginRegistry:
         metadata: PluginMetadata = plugin.metadata
 
         if metadata.name in self._all_plugins:
-            logger.warning(
-                msg=f"Plugin '{metadata.name}' already registered - replacing."
-            )
+            self.unregister(metadata.name)
 
         if isinstance(plugin, CategorisationPlugin):
             self._categorisation_plugins.append(plugin)
@@ -75,6 +73,8 @@ class PluginRegistry:
 
         plugin: Plugin = self._all_plugins[plugin_name]
 
+        del self._all_plugins[plugin_name]
+
         self._categorisation_plugins: list[CategorisationPlugin] = [
             p for p in self._categorisation_plugins if p.metadata.name != plugin_name
         ]
@@ -88,9 +88,10 @@ class PluginRegistry:
             p for p in self._post_processing_plugins if p.metadata.name != plugin_name
         ]
 
-        plugin.cleanup()
-        del self._all_plugins[plugin_name]
-        logger.info(msg=f"Unregistered plugin: {plugin_name}")
+        try:
+            plugin.cleanup()
+        except Exception as e:
+            logger.warning(f"Plugin '{plugin_name}' raised during cleanup: {e}")
 
     def get_categorisation_plugins(self) -> List[CategorisationPlugin]:
         """Returns the list of registered categorisation plugins.
@@ -224,7 +225,10 @@ class PluginRegistry:
             return
 
         module: ModuleType = importlib.util.module_from_spec(spec)
-        sys.modules[plugin_file.stem] = module
+        module_key = (
+            f"file_organiser._plugin_{plugin_file.stem}_{hash(str(plugin_file))}"
+        )
+        sys.modules[module_key] = module
         spec.loader.exec_module(module)
 
         for name in dir(module):

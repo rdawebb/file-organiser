@@ -49,8 +49,6 @@ def setup_logging(
     else:
         level: Any | Literal[20] = getattr(logging, log_level.upper(), logging.INFO)
 
-    handlers: list[logging.Handler] = []
-
     rust_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
     rust_handler.setLevel(level)
 
@@ -67,10 +65,7 @@ def setup_logging(
         rust_formatter = logging.Formatter(fmt="[RUST] %(levelname)s: %(message)s")
 
     rust_handler.setFormatter(fmt=rust_formatter)
-    handlers.append(rust_handler)
-
     console_handler.setFormatter(fmt=console_formatter)
-    handlers.append(console_handler)
 
     if log_file:
         file_handler = RotatingFileHandler(
@@ -83,12 +78,15 @@ def setup_logging(
         )
 
         file_handler.setFormatter(fmt=file_formatter)
-        handlers.append(file_handler)
 
     logging.basicConfig(
         level=logging.DEBUG,
-        handlers=handlers,
+        handlers=[console_handler],
     )
+
+    rust_logger = logging.getLogger("rust")
+    rust_logger.addHandler(rust_handler)
+    rust_logger.propagate = False
 
     file_mover.init_logging()
 

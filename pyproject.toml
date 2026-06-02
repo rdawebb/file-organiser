@@ -42,11 +42,11 @@ dev = [
     "pytest-timeout>=2.4.0,<3.0.0",
     "ruff>=0.15.15,<1.0.0",
     "rust-just>=1.51.0,<2.0.0",
-    "ty>=0.0.40,<1.0.0"
+    "ty>=0.0.42,<1.0.0"
 ]
 
 [project.scripts]
-org = "file_organiser.cli.main:app"
+fo = "file_organiser.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/rdawebb/file-organiser"
@@ -54,8 +54,8 @@ Repository = "https://github.com/rdawebb/file-organiser"
 Documentation = "https://github.com/rdawebb/file-organiser/blob/main/README.md"
 
 [tool.maturin]
-module-name = "file_mover"
-python-packages = ["src/file_organiser"]
+module-name = "file_organiser.file_mover"
+python-source = "src"
 manifest-path = "rust/file_mover/Cargo.toml"
 
 [tool.pytest.ini_options]
