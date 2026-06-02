@@ -1,12 +1,13 @@
 """Unit tests for base plugin classes."""
 
-from src.file_organiser.plugins.base import PluginMetadata
-from tests.fixtures.mock_plugins import (
+from fixtures.mock_plugins import (
     MockCategorisationPlugin,
     MockFilterPlugin,
     MockPostProcessingPlugin,
     MockReporterPlugin,
 )
+
+from file_organiser.plugins.base import PluginMetadata
 
 
 class TestPluginMetadata:
@@ -69,7 +70,7 @@ class TestCategorisationPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -89,7 +90,7 @@ class TestCategorisationPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.xyz"),
@@ -139,7 +140,7 @@ class TestReporterPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -160,7 +161,7 @@ class TestReporterPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import MoveResult, MoveStatus
+        from file_organiser.core.models import MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,
@@ -177,7 +178,7 @@ class TestReporterPlugin:
         """Test on_complete method."""
         plugin = MockReporterPlugin()
 
-        from src.file_organiser.core.models import OrganiserResult
+        from file_organiser.core.models import OrganiserResult
 
         result = OrganiserResult(
             files_processed=10,
@@ -212,7 +213,7 @@ class TestFilterPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -232,7 +233,7 @@ class TestFilterPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),
@@ -263,7 +264,7 @@ class TestPostProcessingPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo, MoveResult, MoveStatus
+        from file_organiser.core.models import FileInfo, MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,
@@ -289,7 +290,7 @@ class TestPostProcessingPlugin:
 
         from pathlib import Path
 
-        from src.file_organiser.core.models import FileInfo, MoveResult, MoveStatus
+        from file_organiser.core.models import FileInfo, MoveResult, MoveStatus
 
         result = MoveResult(
             status=MoveStatus.SUCCESS,

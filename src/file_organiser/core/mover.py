@@ -5,10 +5,9 @@ from logging import Logger
 from pathlib import Path
 from typing import Optional
 
-from file_mover import file_mover
+from file_organiser import file_mover  # type: ignore
 
-from src.file_organiser.utils.logging import get_logger
-
+from ..utils.logging import get_logger
 from .models import MoveResult, MoveStatus
 
 logger: Logger = get_logger(name=__name__)

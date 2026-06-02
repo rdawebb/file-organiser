@@ -46,7 +46,7 @@ dev = [
 ]
 
 [project.scripts]
-org = "src.file_organiser.cli.main:app"
+org = "file_organiser.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/rdawebb/file-organiser"
@@ -55,8 +55,8 @@ Documentation = "https://github.com/rdawebb/file-organiser/blob/main/README.md"
 
 [tool.maturin]
 module-name = "file_mover"
-python-packages = ["src"]
+python-packages = ["src/file_organiser"]
 manifest-path = "rust/file_mover/Cargo.toml"
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src"]

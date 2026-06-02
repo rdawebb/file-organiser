@@ -1,9 +1,9 @@
 """End-to-end integration tests for complete file organisation workflow."""
 
-from src.file_organiser.core.organiser import FileOrganiser
-from src.file_organiser.core.models import OrganiserResult
+from fixtures.mock_plugins import MockReporterPlugin
 
-from tests.fixtures.mock_plugins import MockReporterPlugin
+from file_organiser.core.models import OrganiserResult
+from file_organiser.core.organiser import FileOrganiser
 
 
 class TestEndToEndWorkflow:

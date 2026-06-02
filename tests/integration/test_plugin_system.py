@@ -1,12 +1,12 @@
 """Integration tests for plugin system."""
 
-from src.file_organiser.plugins.registry import PluginRegistry
-
-from tests.fixtures.mock_plugins import (
+from fixtures.mock_plugins import (
     MockCategorisationPlugin,
-    MockReporterPlugin,
     MockFilterPlugin,
+    MockReporterPlugin,
 )
+
+from file_organiser.plugins.registry import PluginRegistry
 
 
 class TestPluginSystemIntegration:
@@ -71,9 +71,10 @@ class TestPluginInteraction:
 
     def test_reporter_receives_categorisation_results(self):
         """Test that reporter receives results from categorisation."""
-        from src.file_organiser.core.categoriser import FileCategoriser
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from file_organiser.core.categoriser import FileCategoriser
+        from file_organiser.core.models import FileInfo
 
         registry = PluginRegistry()
         plugin = MockCategorisationPlugin(
@@ -103,8 +104,9 @@ class TestPluginInteraction:
         filter_plugin = MockFilterPlugin(name="test", exclude_all=True)
         registry.register(filter_plugin)
 
-        from src.file_organiser.core.models import FileInfo
         from pathlib import Path
+
+        from file_organiser.core.models import FileInfo
 
         file_info = FileInfo(
             path=Path("test.txt"),

@@ -4,8 +4,7 @@ import ast
 from pathlib import Path
 from typing import Optional, Set
 
-from src.file_organiser.core.models import FileInfo
-
+from ...core.models import FileInfo
 from ..base import CategorisationPlugin, PluginMetadata
 
 EXTENSIONS_PATH: Path = (

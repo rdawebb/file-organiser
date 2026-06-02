@@ -11,13 +11,14 @@ if TYPE_CHECKING:
         ReporterPlugin,
     )
 
-from src.file_organiser.plugins.registry import PluginRegistry
-from tests.fixtures.mock_plugins import (
+from fixtures.mock_plugins import (
     MockCategorisationPlugin,
     MockFilterPlugin,
     MockPostProcessingPlugin,
     MockReporterPlugin,
 )
+
+from file_organiser.plugins.registry import PluginRegistry
 
 
 class TestPluginRegistryInitialisation:

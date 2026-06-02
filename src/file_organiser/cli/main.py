@@ -9,8 +9,8 @@ if TYPE_CHECKING:
 
 from typer_extensions import ExtendedTyper
 
-from src.file_organiser.core.organiser import FileOrganiser
-from src.file_organiser.utils.logging import get_logger
+from ..core.organiser import FileOrganiser
+from ..utils.logging import get_logger
 
 app = ExtendedTyper(help="File Organiser CLI")
 

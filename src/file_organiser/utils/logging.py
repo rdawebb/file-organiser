@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Literal, Optional, TextIO
 
-from file_mover import file_mover
+from file_organiser import file_mover  # type: ignore
 
 
 class ColouredFormatter(logging.Formatter):

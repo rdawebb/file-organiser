@@ -1,84 +1,54 @@
 """Pytest configuration and shared fixtures for all tests."""
 
-import pytest
+import sys
 from pathlib import Path
 
-from src.file_organiser.core.models import FileInfo, MoveStatus, MoveResult
-from src.file_organiser.core.categoriser import FileCategoriser
-from src.file_organiser.core.mover import FileMover, MoveOptions
-from src.file_organiser.core.validators import PathValidator
-from src.file_organiser.plugins.registry import PluginRegistry
+import pytest
 
-from tests.fixtures.sample_files import (
-    create_sample_files,
-    create_test_structure,
-    create_problematic_files,
-)
-from tests.fixtures.directories import create_organised_directory
-from tests.fixtures.mock_plugins import (
+sys.path.insert(0, str(Path(__file__).parent))
+
+from fixtures.mock_plugins import (
     MockCategorisationPlugin,
     MockFilterPlugin,
-    MockReporterPlugin,
     MockPostProcessingPlugin,
+    MockReporterPlugin,
 )
+from fixtures.sample_files import create_sample_files
+
+from file_organiser.core.models import FileInfo, MoveResult, MoveStatus
+from file_organiser.plugins.registry import PluginRegistry
 
 
 @pytest.fixture
 def tmp_unorganised_dir(tmp_path: Path) -> Path:
     """Create a temporary unorganised directory with various files.
 
-    Yields:
+    Returns:
         Path to the unorganised directory
     """
     source_dir = tmp_path / "unorganised"
     source_dir.mkdir()
-
-    files = [
-        ("document.txt", "This is a document"),
-        ("report.pdf", "%PDF-1.4\nFake PDF"),
-        ("image.png", "\x89PNG\r\n\x1a\n"),
-        ("video.mp4", "ftypisom"),
-        ("script.py", "print('hello')"),
-        ("archive.zip", "PK\x03\x04"),
-    ]
-
-    create_sample_files(source_dir, files)
+    create_sample_files(
+        source_dir,
+        [
+            ("document.txt", "This is a document"),
+            ("report.pdf", "%PDF-1.4\nFake PDF"),
+            ("image.png", "\x89PNG\r\n\x1a\n"),
+            ("video.mp4", "ftypisom"),
+            ("script.py", "print('hello')"),
+            ("archive.zip", "PK\x03\x04"),
+        ],
+    )
     return source_dir
 
 
 @pytest.fixture
-def tmp_organised_dir(tmp_path: Path) -> dict:
-    """Create a temporary organised directory with category folders.
-
-    Returns:
-        Dictionary with category folder paths
-    """
-    return create_organised_directory(tmp_path / "organised")
-
-
-@pytest.fixture
-def tmp_problematic_files(tmp_path: Path) -> dict:
-    """Create temporary files with problematic names for edge case testing.
-
-    Returns:
-        Dictionary with paths to problematic files
-    """
-    return create_problematic_files(tmp_path / "problematic")
-
-
-@pytest.fixture
-def test_structure(tmp_path: Path) -> dict:
-    """Create a complete test directory structure with various file types.
-
-    Returns:
-        Dictionary with paths to various file type groups
-    """
-    return create_test_structure(tmp_path)
-
-
-@pytest.fixture
 def sample_text_file_info() -> FileInfo:
-    """Create a sample text file info."""
+    """Create a sample text file info.
+
+    Returns:
+        FileInfo instance for a text file
+    """
     return FileInfo(
         path=Path("document.txt"),
         name="document.txt",
@@ -90,7 +60,11 @@ def sample_text_file_info() -> FileInfo:
 
 @pytest.fixture
 def sample_code_file_info() -> FileInfo:
-    """Create a sample code file info."""
+    """Create a sample code file info.
+
+    Returns:
+        FileInfo instance for a code file
+    """
     return FileInfo(
         path=Path("script.py"),
         name="script.py",
@@ -102,7 +76,11 @@ def sample_code_file_info() -> FileInfo:
 
 @pytest.fixture
 def sample_image_file_info() -> FileInfo:
-    """Create a sample image file info."""
+    """Create a sample image file info.
+
+    Returns:
+        FileInfo instance for an image file
+    """
     return FileInfo(
         path=Path("photo.jpg"),
         name="photo.jpg",
@@ -114,7 +92,11 @@ def sample_image_file_info() -> FileInfo:
 
 @pytest.fixture
 def sample_video_file_info() -> FileInfo:
-    """Create a sample video file info."""
+    """Create a sample video file info.
+
+    Returns:
+        FileInfo instance for a video file
+    """
     return FileInfo(
         path=Path("movie.mp4"),
         name="movie.mp4",
@@ -126,7 +108,11 @@ def sample_video_file_info() -> FileInfo:
 
 @pytest.fixture
 def various_file_infos() -> list[FileInfo]:
-    """Create a list of various file infos."""
+    """Create a list of various file infos.
+
+    Returns:
+        List of FileInfo instances
+    """
     return [
         FileInfo(Path("doc.txt"), "doc.txt", ".txt", 100, 0),
         FileInfo(Path("code.py"), "code.py", ".py", 500, 0),
@@ -138,7 +124,11 @@ def various_file_infos() -> list[FileInfo]:
 
 @pytest.fixture
 def successful_move_result() -> MoveResult:
-    """Create a successful move result."""
+    """Create a successful move result.
+
+    Returns:
+        MoveResult with SUCCESS status
+    """
     return MoveResult(
         status=MoveStatus.SUCCESS,
         source=Path("source.txt"),
@@ -149,7 +139,11 @@ def successful_move_result() -> MoveResult:
 
 @pytest.fixture
 def failed_move_result() -> MoveResult:
-    """Create a failed move result."""
+    """Create a failed move result.
+
+    Returns:
+        MoveResult with FAILED status
+    """
     return MoveResult(
         status=MoveStatus.FAILED,
         source=Path("source.txt"),
@@ -160,17 +154,23 @@ def failed_move_result() -> MoveResult:
 
 @pytest.fixture
 def skipped_move_result() -> MoveResult:
-    """Create a skipped move result."""
+    """Create a skipped move result.
+
+    Returns:
+        MoveResult with SKIPPED status
+    """
     return MoveResult(
-        status=MoveStatus.SKIPPED,
-        source=Path("source.txt"),
-        destination=None,
+        status=MoveStatus.SKIPPED, source=Path("source.txt"), destination=None
     )
 
 
 @pytest.fixture
 def dry_run_move_result() -> MoveResult:
-    """Create a dry run move result."""
+    """Create a dry run move result.
+
+    Returns:
+        MoveResult with DRY_RUN status
+    """
     return MoveResult(
         status=MoveStatus.DRY_RUN,
         source=Path("source.txt"),
@@ -180,8 +180,29 @@ def dry_run_move_result() -> MoveResult:
 
 
 @pytest.fixture
+def test_config() -> dict:
+    """Create a test config dictionary.
+
+    Returns:
+        Dictionary containing test configuration
+    """
+    return {
+        "atomic": True,
+        "verify_checksum": True,
+        "preserve_metadata": True,
+        "create_dirs": True,
+        "include_hidden": False,
+        "validate_paths": True,
+    }
+
+
+@pytest.fixture
 def mock_categoriser_plugin() -> MockCategorisationPlugin:
-    """Create a mock categorisation plugin."""
+    """Create a mock categorisation plugin.
+
+    Returns:
+        MockCategorisationPlugin instance
+    """
     return MockCategorisationPlugin(
         name="test_categoriser",
         category_map={
@@ -196,19 +217,31 @@ def mock_categoriser_plugin() -> MockCategorisationPlugin:
 
 @pytest.fixture
 def mock_filter_plugin() -> MockFilterPlugin:
-    """Create a mock filter plugin."""
+    """Create a mock filter plugin.
+
+    Returns:
+        MockFilterPlugin instance
+    """
     return MockFilterPlugin(name="test_filter", exclude_all=False)
 
 
 @pytest.fixture
 def mock_reporter_plugin() -> MockReporterPlugin:
-    """Create a mock reporter plugin."""
+    """Create a mock reporter plugin.
+
+    Returns:
+        MockReporterPlugin instance
+    """
     return MockReporterPlugin(name="test_reporter")
 
 
 @pytest.fixture
 def mock_post_processor_plugin() -> MockPostProcessingPlugin:
-    """Create a mock post-processing plugin."""
+    """Create a mock post-processing plugin.
+
+    Returns:
+        MockPostProcessingPlugin instance
+    """
     return MockPostProcessingPlugin(name="test_post_processor")
 
 
@@ -229,70 +262,9 @@ def mock_plugin_registry(mock_categoriser_plugin) -> PluginRegistry:
 
 @pytest.fixture
 def failing_categoriser_plugin() -> MockCategorisationPlugin:
-    """Create a categoriser plugin that fails."""
-    return MockCategorisationPlugin(
-        name="failing_categoriser",
-        should_fail=True,
-    )
-
-
-@pytest.fixture
-def move_options() -> MoveOptions:
-    """Create default move options."""
-    return MoveOptions(
-        atomic=True,
-        verify_checksum=True,
-        preserve_metadata=True,
-        create_dirs=True,
-        overwrite_existing=False,
-    )
-
-
-@pytest.fixture
-def file_mover(move_options) -> FileMover:
-    """Create a file mover instance."""
-    return FileMover(options=move_options)
-
-
-@pytest.fixture
-def file_categoriser(mock_plugin_registry) -> FileCategoriser:
-    """Create a file categoriser instance.
-
-    Args:
-        mock_plugin_registry: The mock plugin registry
+    """Create a failing mock categoriser plugin.
 
     Returns:
-        FileCategoriser instance
+        MockCategorisationPlugin instance that will fail
     """
-    return FileCategoriser(
-        plugin_registry=mock_plugin_registry,
-        fallback_category="Uncategorised",
-    )
-
-
-@pytest.fixture
-def categoriser_with_fallback() -> FileCategoriser:
-    """Create a file categoriser with fallback only (no plugins)."""
-    return FileCategoriser(
-        plugin_registry=PluginRegistry(),
-        fallback_category="Other",
-    )
-
-
-@pytest.fixture
-def test_config() -> dict:
-    """Create test configuration."""
-    return {
-        "atomic": True,
-        "verify_checksum": True,
-        "preserve_metadata": True,
-        "create_dirs": True,
-        "include_hidden": False,
-        "validate_paths": True,
-    }
-
-
-@pytest.fixture
-def path_validator() -> type:
-    """Provide the PathValidator class for direct testing."""
-    return PathValidator
+    return MockCategorisationPlugin(name="failing_categoriser", should_fail=True)

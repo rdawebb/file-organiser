@@ -7,9 +7,10 @@ if TYPE_CHECKING:
 
     from file_organiser.core.models import FileInfo
 
-from src.file_organiser.core.models import OrganiserResult
-from src.file_organiser.core.organiser import FileOrganiser
-from tests.fixtures.mock_plugins import MockReporterPlugin
+from fixtures.mock_plugins import MockReporterPlugin
+
+from file_organiser.core.models import OrganiserResult
+from file_organiser.core.organiser import FileOrganiser
 
 
 class TestFileOrganiserInitialisation:

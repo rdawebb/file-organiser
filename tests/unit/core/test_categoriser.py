@@ -2,10 +2,11 @@
 
 from pathlib import Path
 
-from src.file_organiser.core.categoriser import FileCategoriser
-from src.file_organiser.core.models import FileInfo
-from src.file_organiser.plugins.registry import PluginRegistry
-from tests.fixtures.mock_plugins import MockCategorisationPlugin
+from fixtures.mock_plugins import MockCategorisationPlugin
+
+from file_organiser.core.categoriser import FileCategoriser
+from file_organiser.core.models import FileInfo
+from file_organiser.plugins.registry import PluginRegistry
 
 
 class TestCategoriserInitialisation:

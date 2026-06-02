@@ -2,8 +2,8 @@
 
 from typing import Optional
 
-from src.file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
-from src.file_organiser.plugins.base import (
+from file_organiser.core.models import FileInfo, MoveResult, OrganiserResult
+from file_organiser.plugins.base import (
     CategorisationPlugin,
     FilterPlugin,
     PluginMetadata,
@@ -50,10 +50,22 @@ class MockCategorisationPlugin(CategorisationPlugin):
 
     @property
     def metadata(self) -> PluginMetadata:
+        """Get the plugin metadata.
+
+        Returns:
+            PluginMetadata instance
+        """
         return self._metadata
 
     def categorise(self, file_info: FileInfo) -> Optional[str]:
-        """Categorise a file."""
+        """Categorise a file.
+
+        Args:
+            file_info: FileInfo instance to categorise
+
+        Returns:
+            Category string if categorisation successful, None otherwise
+        """
         self.call_count += 1
         self.categorised_files.append(file_info)
 
@@ -63,11 +75,22 @@ class MockCategorisationPlugin(CategorisationPlugin):
         return self.category_map.get(file_info.extension)
 
     def can_categorise(self, file_info: FileInfo) -> bool:
-        """Check if plugin can categorise file."""
+        """Check if plugin can categorise file.
+
+        Args:
+            file_info: FileInfo instance to check
+
+        Returns:
+            True if file can be categorised, False otherwise
+        """
         return file_info.extension in self.category_map
 
     def get_categories(self) -> set[str]:
-        """Get all categories this plugin provides."""
+        """Get all categories this plugin provides.
+
+        Returns:
+            Set of all categories
+        """
         return set(self.category_map.values())
 
 
@@ -94,10 +117,22 @@ class MockFilterPlugin(FilterPlugin):
 
     @property
     def metadata(self) -> PluginMetadata:
+        """Get the plugin metadata.
+
+        Returns:
+            PluginMetadata instance
+        """
         return self._metadata
 
     def should_process(self, file_info: FileInfo) -> bool:
-        """Determine if file should be processed."""
+        """Determine if file should be processed.
+
+        Args:
+            file_info: FileInfo instance to check
+
+        Returns:
+            True if file should be processed, False otherwise
+        """
         self.checked_files.append(file_info)
         return not self.exclude_all
 
@@ -128,23 +163,44 @@ class MockReporterPlugin(ReporterPlugin):
 
     @property
     def metadata(self) -> PluginMetadata:
+        """Get the plugin metadata.
+
+        Returns:
+            PluginMetadata instance
+        """
         return self._metadata
 
     def on_start(self, total_files: int) -> None:
-        """Called when organisation starts."""
+        """Called when organisation starts.
+
+        Args:
+            total_files: Total number of files to process
+        """
         self.start_called = True
         self.total_files: int = total_files
 
     def on_file_processing(self, file_info: FileInfo) -> None:
-        """Called when processing a file."""
+        """Called when processing a file.
+
+        Args:
+            file_info: FileInfo instance of file to process
+        """
         self.processing_files.append(file_info)
 
     def on_file_processed(self, result: MoveResult) -> None:
-        """Called when file is processed."""
+        """Called when file is processed.
+
+        Args:
+            result: MoveResult instance of processed file
+        """
         self.processed_results.append(result)
 
     def on_complete(self, result: OrganiserResult) -> None:
-        """Called when organisation is complete."""
+        """Called when organisation is complete.
+
+        Args:
+            result: OrganiserResult instance of completed organisation
+        """
         self.complete_called = True
         self.complete_result: OrganiserResult = result
 
@@ -172,10 +228,20 @@ class MockPostProcessingPlugin(PostProcessingPlugin):
 
     @property
     def metadata(self) -> PluginMetadata:
+        """Get the plugin metadata.
+
+        Returns:
+            PluginMetadata instance
+        """
         return self._metadata
 
     def process(self, result: MoveResult, original_info: FileInfo) -> None:
-        """Post-process the organisation result."""
+        """Post-process the organisation result.
+
+        Args:
+            result: MoveResult instance of processed file
+            original_info: FileInfo instance of original file
+        """
         self.processed_results.append((result, original_info))
 
         if self.should_fail:

@@ -7,10 +7,9 @@ from logging import Logger
 from pathlib import Path
 from typing import Iterator, List, Optional, Union, cast
 
-from src.file_organiser.plugins.base import ReporterPlugin
-from src.file_organiser.plugins.registry import PluginRegistry
-from src.file_organiser.utils.logging import get_logger
-
+from ..plugins.base import ReporterPlugin
+from ..plugins.registry import PluginRegistry
+from ..utils.logging import get_logger
 from .categoriser import FileCategoriser
 from .models import FileInfo, MoveResult, MoveStatus, OrganiserResult, OrganiserStats
 from .mover import FileMover, MoveOptions

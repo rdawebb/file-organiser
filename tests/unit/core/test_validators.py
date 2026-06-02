@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.file_organiser.core.validators import PathValidator
+from file_organiser.core.validators import PathValidator
 
 
 class TestPathValidation:

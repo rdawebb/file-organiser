@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
     from file_organiser.core.models import MoveResult
 
-from src.file_organiser.core.models import MoveStatus
-from src.file_organiser.core.mover import FileMover, MoveOptions
+from file_organiser.core.models import MoveStatus
+from file_organiser.core.mover import FileMover, MoveOptions
 
 
 class TestMoveOptions:
@@ -145,18 +145,20 @@ class TestFileMoverErrorHandling:
     """Tests for error handling in file moves."""
 
     def test_move_nonexistent_file(self, tmp_path, file_mover):
-        """Test moving a file that doesn't exist."""
+        """Test moving a file that doesn't exist raises FileNotFoundError."""
+        import pytest
+
         source: Path = tmp_path / "nonexistent.txt"
         dest_dir: Path = tmp_path / "dest"
         dest_dir.mkdir()
 
-        result: MoveResult = file_mover.move_file(source, dest_dir)
-
-        assert result.status == MoveStatus.FAILED
-        assert result.error is not None
+        with pytest.raises(FileNotFoundError):
+            file_mover.move_file(source, dest_dir)
 
     def test_move_to_nonexistent_destination(self, tmp_path):
-        """Test moving to non-existent destination without create_dirs."""
+        """Test moving to non-existent destination without create_dirs raises OSError."""
+        import pytest
+
         options = MoveOptions(create_dirs=False)
         mover = FileMover(options=options)
 
@@ -165,9 +167,8 @@ class TestFileMoverErrorHandling:
 
         source.write_text(data="test content")
 
-        result: MoveResult = mover.move_file(source, destination=dest_dir)
-
-        assert result.status == MoveStatus.FAILED
+        with pytest.raises(OSError):
+            mover.move_file(source, destination=dest_dir)
 
 
 class TestFileOverwrite:

@@ -4,10 +4,9 @@ from logging import Logger
 from pathlib import Path
 from typing import Any, List, Optional
 
-from src.file_organiser.plugins.base import CategorisationPlugin
-from src.file_organiser.plugins.registry import PluginRegistry
-from src.file_organiser.utils.logging import get_logger
-
+from ..plugins.base import CategorisationPlugin
+from ..plugins.registry import PluginRegistry
+from ..utils.logging import get_logger
 from .models import FileInfo
 
 logger: Logger = get_logger(name=__name__)

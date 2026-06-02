@@ -8,8 +8,7 @@ if TYPE_CHECKING:
     from _frozen_importlib import ModuleSpec
     from types import ModuleType
 
-from src.file_organiser.utils.logging import get_logger
-
+from ..utils.logging import get_logger
 from .base import (
     CategorisationPlugin,
     FilterPlugin,
@@ -179,10 +178,10 @@ class PluginRegistry:
         Returns:
             PluginRegistry: A new instance of PluginRegistry.
         """
-        from src.file_organiser.plugins.builtin.extension import (
+        from .builtin.extension import (
             ExtensionCategorisationPlugin,
         )
-        from src.file_organiser.plugins.builtin.reporters import RichReporterPlugin
+        from .builtin.reporters import RichReporterPlugin
 
         registry: PluginRegistry = cls()
         registry.register(plugin=ExtensionCategorisationPlugin(custom_extensions=None))

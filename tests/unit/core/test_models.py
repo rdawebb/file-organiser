@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.file_organiser.core.models import (
+from file_organiser.core.models import (
     FileInfo,
     MoveResult,
     MoveStatus,
