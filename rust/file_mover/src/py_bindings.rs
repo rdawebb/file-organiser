@@ -24,6 +24,9 @@ impl PyMoveStatus {
     #[classattr]
     const DRY_RUN: &'static str = "DRY_RUN";
 
+    #[classattr]
+    const SKIPPED: &'static str = "SKIPPED";
+
     fn __repr__(&self) -> String {
         format!("MoveStatus.{}", self.value)
     }

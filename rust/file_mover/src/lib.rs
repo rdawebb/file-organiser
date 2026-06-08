@@ -1,6 +1,7 @@
 pub mod models;
 pub mod mover;
 pub mod options;
+pub mod progress;
 
 // Python bindings module
 #[cfg(feature = "python")]

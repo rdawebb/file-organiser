@@ -124,7 +124,7 @@ class FileCategoriser:
         for plugin in self._get_plugins():
             try:
                 get_cats: Any | None = getattr(plugin, "get_categories", None)
-                if callable(get_cats):
+                if callable(get_cats) and category in get_cats():
                     provided_by: list[str] = info["provided_by"]
                     if not isinstance(provided_by, list) or provided_by is None:
                         provided_by: list[str] = []

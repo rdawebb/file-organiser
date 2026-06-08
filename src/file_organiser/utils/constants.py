@@ -2,10 +2,6 @@
 
 from pathlib import Path
 
-EXTENSIONS_PATH: Path = (
-    Path(__file__).parent.parent.parent / "data" / "default_extensions.py"
-)
-
 FALLBACK_CATEGORY = "Unknown"
 
 FORBIDDEN_PATHS: set[Path] = {

@@ -1,4 +1,6 @@
-{
+"""Default file extensions for file categorisation."""
+
+DEFAULT_EXTENSIONS: dict[str, str] = {
     ".7z": "archives",
     ".ace": "archives",
     ".arj": "archives",

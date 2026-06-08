@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write as FmtWrite;
 use std::fs::{self, File};
 use std::io::{self, Read};
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
-use std::fmt::Write as FmtWrite;
 
 use blake3::Hasher;
 use parking_lot::Mutex;
@@ -50,15 +51,13 @@ impl FileMover {
         }
 
         // Determine target filename
-        let target_filename = filename
-            .map(String::from)
-            .unwrap_or_else(|| {
-                source
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("unnamed")
-                    .to_string()
-            });
+        let target_filename = filename.map(String::from).unwrap_or_else(|| {
+            source
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unnamed")
+                .to_string()
+        });
 
         // Get unique filename to avoid collisions
         let unique_filename = match self.get_unique_filename(destination_dir, &target_filename) {
@@ -194,7 +193,7 @@ impl FileMover {
 
         // Use larger buffer for better throughput
         let mut buffer = vec![0u8; BUFFER_SIZE];
-        
+
         let mut src_file = File::open(source)?;
         let mut dst_file = File::create(&temp_dest)?;
 
@@ -241,9 +240,11 @@ impl FileMover {
             use std::os::unix::fs::MetadataExt;
             let atime = metadata.atime();
             let mtime = metadata.mtime();
-            
+
             unsafe {
-                let path_cstring = std::ffi::CString::new(dest.to_str().unwrap()).unwrap();
+                let path_cstring = std::ffi::CString::new(dest.as_os_str().as_bytes())
+                    .map_err(|_| MoveError::Other("Path contains null bytes".into()))?;
+
                 let times = [
                     libc::timespec {
                         tv_sec: atime,
@@ -254,12 +255,14 @@ impl FileMover {
                         tv_nsec: 0,
                     },
                 ];
-                libc::utimensat(
-                    libc::AT_FDCWD,
-                    path_cstring.as_ptr(),
-                    times.as_ptr(),
-                    0,
-                );
+                let ret = libc::utimensat(libc::AT_FDCWD, path_cstring.as_ptr(), times.as_ptr(), 0);
+                if ret != 0 {
+                    log::warn!(
+                        "Failed to preserve timestamps on {:?}: {}",
+                        dest,
+                        std::io::Error::last_os_error()
+                    );
+                }
             }
         }
 
@@ -299,11 +302,7 @@ impl FileMover {
         Ok(hasher.finalize().to_hex().to_string())
     }
 
-    fn get_unique_filename(
-        &self,
-        directory: &Path,
-        filename: &str,
-    ) -> Result<String, MoveError> {
+    fn get_unique_filename(&self, directory: &Path, filename: &str) -> Result<String, MoveError> {
         const MAX_ATTEMPTS: usize = 10000;
 
         let mut cache = self.collision_cache.lock();
@@ -341,7 +340,10 @@ impl FileMover {
 
         // Generate numbered variants
         let path = Path::new(filename);
-        let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("unnamed");
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unnamed");
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
         // Pre-allocate with estimated capacity to reduce allocations
@@ -352,12 +354,12 @@ impl FileMover {
             new_filename.clear();
             new_filename.push_str(stem);
             new_filename.push('(');
-            
+
             // Use fmt::Write for efficient integer formatting
             write!(&mut new_filename, "{}", count).unwrap();
-            
+
             new_filename.push(')');
-            
+
             if !extension.is_empty() {
                 new_filename.push('.');
                 new_filename.push_str(extension);
@@ -368,13 +370,13 @@ impl FileMover {
                 // Truncate stem to fit within limit
                 let overhead = format!("({}).{}", count, extension).len();
                 let max_stem_len = 255_usize.saturating_sub(overhead);
-                
+
                 new_filename.clear();
                 new_filename.push_str(&stem[..max_stem_len.min(stem.len())]);
                 new_filename.push('(');
                 write!(&mut new_filename, "{}", count).unwrap();
                 new_filename.push(')');
-                
+
                 if !extension.is_empty() {
                     new_filename.push('.');
                     new_filename.push_str(extension);
@@ -412,12 +414,10 @@ impl FileMover {
         dry_run: bool,
     ) -> Vec<MoveResult> {
         let destination_dir = destination_dir.as_ref();
-        
+
         sources
             .into_iter()
-            .map(|source| {
-                self.move_file(&source, destination_dir, None, category.clone(), dry_run)
-            })
+            .map(|source| self.move_file(&source, destination_dir, None, category.clone(), dry_run))
             .collect()
     }
 }
@@ -455,9 +455,9 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let source_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("dest");
-        
+
         fs::create_dir(&source_dir).unwrap();
-        
+
         let source_file = source_dir.join("test.txt");
         let mut file = File::create(&source_file).unwrap();
         file.write_all(b"Hello, World!").unwrap();
@@ -476,9 +476,9 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let source_dir = temp_dir.path().join("source");
         let dest_dir = temp_dir.path().join("dest");
-        
+
         fs::create_dir(&source_dir).unwrap();
-        
+
         let mut sources = Vec::new();
         for i in 0..10 {
             let file_path = source_dir.join(format!("file_{}.txt", i));

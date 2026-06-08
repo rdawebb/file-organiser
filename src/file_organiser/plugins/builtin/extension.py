@@ -1,17 +1,10 @@
 """Plugin for categorising files based on their extensions."""
 
-import ast
-from pathlib import Path
 from typing import Optional, Set
 
 from ...core.models import FileInfo
+from ...data.default_extensions import DEFAULT_EXTENSIONS
 from ..base import CategorisationPlugin, PluginMetadata
-
-EXTENSIONS_PATH: Path = (
-    Path(__file__).parent.parent.parent / "data" / "default_extensions.py"
-)
-with open(file=EXTENSIONS_PATH, mode="r", encoding="utf-8") as f:
-    EXTENSIONS: dict[str, str] = ast.literal_eval(node_or_string=f.read())
 
 
 class ExtensionCategorisationPlugin(CategorisationPlugin):
@@ -24,7 +17,7 @@ class ExtensionCategorisationPlugin(CategorisationPlugin):
             custom_extensions (Optional[dict[str, str]]): A dictionary mapping file extensions
                 to category names. If None, uses the default EXTENSIONS mapping.
         """
-        self._extensions: dict[str, str] = EXTENSIONS.copy()
+        self._extensions: dict[str, str] = DEFAULT_EXTENSIONS
         if custom_extensions:
             self._extensions.update(custom_extensions)
 
@@ -71,6 +64,9 @@ class ExtensionCategorisationPlugin(CategorisationPlugin):
         Returns:
             bool: True if the plugin can categorise the file, else False.
         """
+        name_lower = file_info.name.lower()
+        if any(name_lower.endswith(ext) for ext in self._multi_part):
+            return True
         return file_info.extension in self._extensions
 
     def get_categories(self) -> Set[str]:
