@@ -28,6 +28,12 @@ class MagicNumberCategorisationPlugin(CategorisationPlugin):
             b"MM\x00*": "images",  # TIFF (big endian)
         }
 
+        self._signatures = dict(
+            sorted(
+                self._signatures.items(), key=lambda item: len(item[0]), reverse=True
+            )
+        )
+
     @property
     def metadata(self) -> PluginMetadata:
         """Returns the metadata for the plugin.

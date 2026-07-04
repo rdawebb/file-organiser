@@ -17,7 +17,7 @@ app = ExtendedTyper(help="File Organiser CLI")
 logger: Logger = get_logger(name=__name__)
 
 
-@app.command_with_aliases(aliases=["org", "o"])
+@app.command(aliases=["org", "o"])
 def organise(
     directory: Path = app.Argument(default=..., help="Directory to organise"),
     dry_run: bool = app.Option(
@@ -47,19 +47,19 @@ def organise(
     app.echo(message=result)
 
 
-@app.command_with_aliases(aliases=["un", "u"])
+@app.command(aliases=["un", "u"])
 def undo() -> None:
     """Undo the last organisation run."""
     app.echo(message="Not implemented yet")
 
 
-@app.command_with_aliases(aliases=["st", "s"])
+@app.command(aliases=["st", "s"])
 def stats() -> None:
     """Display statistics about the last organisation run."""
     app.echo(message="Not implemented yet")
 
 
-@app.command_with_aliases(aliases=["val", "v"])
+@app.command(aliases=["val", "v"])
 def validate(
     path: Path = app.Argument(default=..., help="Path to validate"),
 ) -> None:
@@ -68,13 +68,13 @@ def validate(
     app.echo(message="Not implemented yet")
 
 
-@app.command_with_aliases(name="list", aliases=["ls", "l"])
+@app.command(name="list", aliases=["ls", "l"])
 def list_categories() -> None:
     """List all known file categories."""
     app.echo(message="Not implemented yet")
 
 
-@app.command_with_aliases(aliases=["cfg", "c"])
+@app.command(aliases=["cfg", "c"])
 def config() -> None:
     """Configure File Organiser CLI."""
     app.echo(message="Not implemented yet")
